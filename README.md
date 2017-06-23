@@ -15,4 +15,10 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 
 SPlotter will automatically make plots of the size you specify until you run out of space.
 
+You need to run as admin/root or the repeat functionality won't work.
+
+Running as admin/root will also increase your plotting speed.
+
+Windows 64-Bit Download: [HERE](https://drive.google.com/open?id=0B0Q42ssOM6b6d1YwQWFscFJZUjQ)
+
 ![Imgur](http://i.imgur.com/6RNroRy.png)
