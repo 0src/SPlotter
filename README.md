@@ -3,13 +3,9 @@
 Windows 64-Bit Download: [HERE](https://drive.google.com/open?id=0B0Q42ssOM6b6d1YwQWFscFJZUjQ) or [HERE](https://github.com/SamuelNZ/SPlotter/releases/download/v1.0/SPlotter.zip)
 
 
-SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full allowing you to get the best dead line possible for your hard drives, Part of the dead-line calculation appears to involve the location of the nonce in the plot relative to the center of the plot (not the drive) which means finding a nonce near the start or end of a plot is better and will give you a lower deadline.
+SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full.
 
-![Imgur](http://i.imgur.com/MQcQvCA.png)
-
-
-This is a light-weight version of [XPlotter](https://github.com/Blagodarenko/XPlotter), Please support them.
-
+SPlotter is also extremely useful for making larger plots to be copied to SMR/Seagate drives, You can safely copy the plot as soon as it starts working on the next one, It will take care of the start nonce for you so there is no risk of overlapping. I'm considering adding the ability to auto-move a plot to a specified drive.
 
 # Usage
 
@@ -28,3 +24,10 @@ Running as admin/root will also increase your plotting speed.
 SPlotter is fully compatible with XPlotter.
 
 ![Imgur](http://i.imgur.com/6RNroRy.png)
+
+
+
+Part of the dead-line calculation appears to involve the location of the nonce in the plot relative to the center of the plot (not the drive) which means finding a nonce near the start or end of a plot is better and will give you a lower deadline. Which basically means having lots of small plots increases your chance of a lower deadline in some respects, This was the real reason i made this.
+
+![Imgur](http://i.imgur.com/MQcQvCA.png)
+
