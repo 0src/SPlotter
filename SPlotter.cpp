@@ -488,6 +488,23 @@ int main(int argc, char* argv[])
 	
 	// Set next Start Nonce and Restart
 	startnonce = startnonce + nonces + 1;
+	
+	
+	// Threads is hard-coded at 1 to do the remaining scoops
+	// Multiples of 256 avoids needing to do this.
+	// Set Threads from args
+	for (auto & it : args)
+		for (auto & c : it) c = tolower(c);
+
+	for (size_t i = 1; i < args.size() - 1; i++)
+	{
+		if ((args[i] == "-t") && is_number(args[++i]))
+			threads = strtoull(args[i].c_str(), 0, 10);
+		printf("\nThreads : %llu", threads);
+	}
+	
+	
+	
 	goto repeater;
 }
 
