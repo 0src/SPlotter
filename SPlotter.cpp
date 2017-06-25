@@ -486,9 +486,6 @@ int main(int argc, char* argv[])
 	printf("\nNonces Per Plot : %llu", nonces);
 	printf("\nNext Start Nonce: %llu ", startnonce + nonces +1);
 	
-	// Set next Start Nonce and Restart
-	startnonce = startnonce + nonces + 1;
-	
 	
 	// Threads is hard-coded at 1 to do the remaining scoops
 	// Multiples of 256 avoids needing to do this.
@@ -503,8 +500,9 @@ int main(int argc, char* argv[])
 		printf("\nThreads : %llu", threads);
 	}
 	
-	
-	
+	// Set next Start Nonce and Restart
+	// Yes I know goto is bad, In this particular case it is fine (and faster)
+	startnonce = startnonce + nonces + 1;	
 	goto repeater;
 }
 
