@@ -13,6 +13,14 @@ HANDLE ofile_stream = nullptr;
 std::vector<size_t> worker_status;
 unsigned long long written_scoops = 0;
 int firstrun = 0;
+unsigned long long addr = 0;
+unsigned long long startnonce = 0;
+unsigned long long nonces = 0;
+unsigned long long threads = 1;
+unsigned long long nonces_per_thread = 0;
+unsigned long long memory = 0;
+std::string out_path = "";
+std::vector<std::string> argsp;
 
 
 
@@ -186,54 +194,29 @@ bool is_number(const std::string& s)
 	return(strspn(s.c_str(), "0123456789") == s.size());
 }
 
-unsigned long long addr = 0;
-unsigned long long startnonce = 0;
-unsigned long long nonces = 0;
-unsigned long long threads = 1;
-unsigned long long nonces_per_thread = 0;
-unsigned long long memory = 0;
-int main(int argc, char* argv[])
+void get_args_start()
 {
-	std::string out_path = "";
 
-	std::thread writer;
-	std::vector<std::thread> workers;
-	unsigned long long start_timer = 0;
-
-	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hConsole == NULL) {
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("Failed to retrieve handle of the process (%u).\n", GetLastError());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		exit(-1);
-	}
-
-	SetConsoleTextAttribute(hConsole, colour::GREEN);
-	printf("\SPlotter for BURST\n");
-	printf("This software allows you to make lots of small pre-optimized plots automatically\n Please consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
-
-
-	std::vector<std::string> args(argv, &argv[(size_t)argc]);	
-	for (auto & it : args)							
+	for (auto & it : argsp)
 		for (auto & c : it) c = tolower(c);
 
-	for (size_t i = 1; i < args.size() - 1; i++)
+	for (size_t i = 1; i < argsp.size() - 1; i++)
 	{
-		if ((args[i] == "-id") && is_number(args[++i]))
-			addr = strtoull(args[i].c_str(), 0, 10);
-		if ((args[i] == "-sn") && is_number(args[++i]))
-			startnonce = strtoull(args[i].c_str(), 0, 10);
-		if ((args[i] == "-n") && is_number(args[++i]))
-			nonces = strtoull(args[i].c_str(), 0, 10);
-		if ((args[i] == "-t") && is_number(args[++i]))
-			threads = strtoull(args[i].c_str(), 0, 10);
-		if (args[i] == "-path")
-			out_path = args[++i];
-		if (args[i] == "-mem")
+		if ((argsp[i] == "-id") && is_number(argsp[++i]))
+			addr = strtoull(argsp[i].c_str(), 0, 10);
+		if ((argsp[i] == "-sn") && is_number(argsp[++i]))
+			startnonce = strtoull(argsp[i].c_str(), 0, 10);
+		if ((argsp[i] == "-n") && is_number(argsp[++i]))
+			nonces = strtoull(argsp[i].c_str(), 0, 10);
+		if ((argsp[i] == "-t") && is_number(argsp[++i]))
+			threads = strtoull(argsp[i].c_str(), 0, 10);
+		if (argsp[i] == "-path")
+			out_path = argsp[++i];
+		if (argsp[i] == "-mem")
 		{
 			i++;
-			memory = strtoull(args[i].substr(0, args[i].find_last_of("0123456789") + 1).c_str(), 0, 10);
-			switch (args[i][args[i].length() - 1])
+			memory = strtoull(argsp[i].substr(0, argsp[i].find_last_of("0123456789") + 1).c_str(), 0, 10);
+			switch (argsp[i][argsp[i].length() - 1])
 			{
 			case 't':
 			case 'T':
@@ -245,6 +228,60 @@ int main(int argc, char* argv[])
 		}
 
 	}
+}
+
+
+
+void get_args_next()
+{
+	for (auto & it : argsp)
+		for (auto & c : it) c = tolower(c);
+	for (size_t i = 1; i < argsp.size() - 1; i++)
+	{
+		if ((argsp[i] == "-t") && is_number(argsp[++i]))
+			threads = strtoull(argsp[i].c_str(), 0, 10);
+		if (argsp[i] == "-mem")
+		{
+			i++;
+			memory = strtoull(argsp[i].substr(0, argsp[i].find_last_of("0123456789") + 1).c_str(), 0, 10);
+			switch (argsp[i][argsp[i].length() - 1])
+			{
+			case 't':
+			case 'T':
+				memory *= 1024;
+			case 'g':
+			case 'G':
+				memory *= 1024;
+			}
+		}
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	// Get arguements
+	std::vector<std::string> args(argv, &argv[(size_t)argc]);
+	// Lazy set global
+	argsp = args;
+
+	std::thread writer;
+	std::vector<std::thread> workers;
+	unsigned long long start_timer = 0;
+	get_args_start();
+
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hConsole == NULL) {
+		SetConsoleTextAttribute(hConsole, colour::RED);
+		printf("Failed to retrieve handle of the process (%u).\n", GetLastError());
+		SetConsoleTextAttribute(hConsole, colour::GRAY);
+		exit(-1);
+	}
+
+	SetConsoleTextAttribute(hConsole, colour::GREEN);
+	printf("SPlotter for BURST\n");
+	printf("This software allows you to make lots of small pre-optimized plots automatically\n Please consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
+
+
 	
 	if (out_path.empty() || (out_path.find(":") == std::string::npos))
 	{
@@ -471,7 +508,6 @@ int main(int argc, char* argv[])
 	printf("\rThat plot took %llu seconds..\n", (GetTickCount64() - start_timer) / 1000);
 
 	// Freeing up RAM
-
 	SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
 	printf("Releasing memory...\n ");
 	for (size_t i = 0; i < HASH_CAP; i++)
@@ -481,21 +517,20 @@ int main(int argc, char* argv[])
 	SetConsoleTextAttribute(hConsole, colour::YELLOW);
 	printf("\nStarting the next plot, Please wait... \n");
 
+	
+	// Set next Start Nonce
+	startnonce = startnonce + nonces + 1;
+
+	//Set flags for the next plot
+	get_args_next();
+
 	SetConsoleTextAttribute(hConsole, colour::BLUE);
 	printf("\nLast Start Nonce: %llu", startnonce);
 	printf("\nNonces Per Plot : %llu", nonces);
-	printf("\nNext Start Nonce: %llu ", startnonce + nonces +1);
-	
-	
-	// Threads is hard-coded at 1 to do the remaining scoops
-	// Multiples of 256 avoids needing to do this.
-	// Set Threads from args
-	for (auto & it : args)for (auto & c : it) c = tolower(c);for (size_t i = 1; i < args.size() - 1; i++)
-	{if ((args[i] == "-t") && is_number(args[++i]))threads = strtoull(args[i].c_str(), 0, 10);}
-	
-	// Set next Start Nonce and Restart
-	// Yes I know goto is bad, In this particular case it is fine (and faster)
-	startnonce = startnonce + nonces + 1;	
+	printf("\nNext Start Nonce: %llu ", startnonce + nonces + 1);
+	printf("\nThreads         : %llu ", threads);
+
+	// Poor mans Loop
 	goto repeater;
 }
 
