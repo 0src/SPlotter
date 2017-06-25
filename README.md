@@ -5,7 +5,7 @@ Windows 64-Bit Download: [HERE](https://drive.google.com/open?id=0B0Q42ssOM6b6d1
 
 SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full allowing you to get the best dead line possible for your hard drives, Part of the dead-line calculation appears to involve the location of the nonce in the plot relative to the center of the plot (not the drive) which means finding a nonce near the start or end of a plot is better and will give you a lower deadline.
 
-[Imgur](http://i.imgur.com/MQcQvCA.png)
+![Imgur](http://i.imgur.com/MQcQvCA.png)
 
 
 This is a light-weight version of [XPlotter](https://github.com/Blagodarenko/XPlotter), Please support them.
