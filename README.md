@@ -15,6 +15,18 @@ SPlotter is also extremely useful for making larger plots to be copied to SMR/Se
 SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G
 ```
 
+## Basics
+
+```
+-id: Your BURST address numeric ID.
+-sn: Nonce to Start at.
+-n: Number of Nonces to Plot.
+-t: Number of 'Workers' roughly matches CPU cores 1/1
+-path: Path to your Plots.
+-mem: Amount of RAM to use while plotting.
+```
+
+
 SPlotter will automatically make plots of the size you specify until you run out of space.
 
 You need to run as admin/root or the repeat functionality won't work.
@@ -22,6 +34,9 @@ You need to run as admin/root or the repeat functionality won't work.
 Running as admin/root will also increase your plotting speed.
 
 SPlotter is fully compatible with XPlotter.
+
+Don't open issues for things you should already know or could ask google.
+
 
 ![Imgur](http://i.imgur.com/6RNroRy.png)
 
