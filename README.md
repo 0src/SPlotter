@@ -15,7 +15,7 @@ SPlotter is also extremely useful for making larger plots to be copied to SMR/Se
 SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G
 ```
 
-## Usage Breakdown
+### Usage Breakdown
 
 ```
 -id: Your BURST address numeric ID.
@@ -34,6 +34,17 @@ If you have Hyperthreading, You can double your thread count.
 
 ![Imgur](http://i.imgur.com/cv5pv7x.png)
 ;)
+
+## Resuming a Plot
+
+To resume a plot you need to match the config to the existing plot file, eg.
+
+```
+17559140197979902351_20001_20000_20000
+```
+```
+SPlotter_avx.exe -id 17559140197979902351 -sn 20001 -n 20000 -t 6 -path F:\burst\plots -mem 5G
+```
 
 ## General
 
