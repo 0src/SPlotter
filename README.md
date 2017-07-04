@@ -58,3 +58,8 @@ Part of the dead-line calculation appears to involve the location of the nonce i
 
 ![Imgur](http://i.imgur.com/MQcQvCA.png)
 
+
+## XPlotter
+
+You might prefer the [original software](https://github.com/Blagodarenko/XPlotter) this is based on if you don't specifically need SPlotter for the repeating functionality which XPlotter doesn't have.
+
