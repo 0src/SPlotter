@@ -2,6 +2,8 @@
 
 Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 
+**Implemented AVX2 Please Update**
+
 
 SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full.
 
