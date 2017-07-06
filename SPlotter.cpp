@@ -12,7 +12,7 @@ HANDLE ofile = nullptr;
 HANDLE ofile_stream = nullptr;
 std::vector<size_t> worker_status;
 unsigned long long written_scoops = 0;
-int firstrun = 0;
+bool first_plot = true;
 unsigned long long addr = 0;
 unsigned long long startnonce = 0;
 unsigned long long nonces = 0;
@@ -187,8 +187,6 @@ unsigned long long read_from_stream()
 	return buf;
 }
 
-
-
 bool is_number(const std::string& s)
 {
 	return(strspn(s.c_str(), "0123456789") == s.size());
@@ -230,8 +228,6 @@ void get_args_start()
 	}
 }
 
-
-
 void get_args_next()
 {
 	for (auto & it : argsp)
@@ -259,278 +255,293 @@ void get_args_next()
 
 int main(int argc, char* argv[])
 {
-	// Get arguements
 	std::vector<std::string> args(argv, &argv[(size_t)argc]);
-	// Lazy set global
 	argsp = args;
-
 	std::thread writer;
 	std::vector<std::thread> workers;
-	unsigned long long start_timer = 0;
-	get_args_start();
-
-	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hConsole == NULL) {
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("Failed to retrieve handle of the process (%u).\n", GetLastError());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		exit(-1);
-	}
-
-	SetConsoleTextAttribute(hConsole, colour::GREEN);
-	printf("SPlotter for BURST\n");
-	printf("This software allows you to make lots of small pre-optimized plots automatically\n Please consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
-
-
-	
-	if (out_path.empty() || (out_path.find(":") == std::string::npos))
+	do
 	{
-		char Buffer[MAX_PATH];
-		GetCurrentDirectoryA(MAX_PATH, Buffer);
-		std::string _path = Buffer;
-		out_path = _path + "\\" + out_path;
-	
-	}
-	if (out_path.rfind("\\") < out_path.length() - 1) out_path += "\\";
+		unsigned long long start_timer = 0;
+		if (first_plot == true) {
+			get_args_start();
 
-	SetConsoleTextAttribute(hConsole, colour::GRAY);
-	printf("\nChecking Directory Exists...\n");
+			hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+			if (hConsole == NULL) {
+				SetConsoleTextAttribute(hConsole, colour::RED);
+				printf("Failed to retrieve handle of the process (%u).\n", GetLastError());
+				SetConsoleTextAttribute(hConsole, colour::GRAY);
+				exit(-1);
+			}
 
-	if (!CreateDirectoryA(out_path.c_str(), nullptr) && ERROR_ALREADY_EXISTS != GetLastError())
-	{
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("Can't create directory %s for plots (Error %u)\n", out_path.c_str(), GetLastError());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		exit(-1);
-	}
+			SetConsoleTextAttribute(hConsole, colour::GREEN);
+			printf("SPlotter for BURST\n");
+			printf("This software allows you to make lots of small pre-optimized plots automatically\n Please consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
 
-	SetConsoleTextAttribute(hConsole, colour::BLUE);
-	printf("Wallet ID:  %llu\n", addr);
-	printf("Start Nonce:  %llu\n", startnonce);
-	printf("Nonces: %llu\n", nonces);
-	printf("End Nonce:  %llu\n", startnonce + nonces);	
-    repeater:
-	DWORD sectorsPerCluster;
-	DWORD bytesPerSector;
-	DWORD numberOfFreeClusters;
-	DWORD totalNumberOfClusters;
-	if (!GetDiskFreeSpaceA(out_path.c_str(), &sectorsPerCluster, &bytesPerSector, &numberOfFreeClusters, &totalNumberOfClusters))
-	{
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("\nGetDiskFreeSpace failed (Error %u)\n", GetLastError());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		exit(-1);
-	}
-	if (nonces == 0) 	nonces = getFreeSpace(out_path.c_str()) / PLOT_SIZE;
-	nonces = (nonces / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
-	std::string filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces) + "_" + std::to_string(nonces);
-	BOOL granted = SetPrivilege();
-	ofile_stream = CreateFileA((out_path + filename + ":stream").c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-	
-	if (ofile_stream == INVALID_HANDLE_VALUE)
-	{
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("\nError creating stream for file %s\n", (out_path + filename).c_str());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		exit(-1);
-	}
-	unsigned long long nonces_done = read_from_stream();
-	if (nonces_done == nonces) // exit
-	{
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("\nFile is already finished. Delete the existing file to start over\n");
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		CloseHandle(ofile_stream);
-		exit(0);
-	}
-	if (nonces_done > 0)
-	{
-		SetConsoleTextAttribute(hConsole, colour::YELLOW);
-		printf("\nContinuing with plot from nonce: %llu\n", nonces_done);
-	}
 
-	SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
-	printf("\nCreating file: %s\n", (out_path + filename).c_str());
-	ofile = CreateFileA((out_path + filename).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING, nullptr); //FILE_ATTRIBUTE_NORMAL     FILE_FLAG_WRITE_THROUGH |
-	if (ofile == INVALID_HANDLE_VALUE)
-	{
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("\nError creating file %s\n", (out_path + filename).c_str());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		CloseHandle(ofile_stream);
-		exit(-1);
-	}
 
-	
-	// Reserve Free Space
-	LARGE_INTEGER liDistanceToMove;
-	liDistanceToMove.QuadPart = nonces * PLOT_SIZE;
-	SetFilePointerEx(ofile, liDistanceToMove, nullptr, FILE_BEGIN);
-	if (SetEndOfFile(ofile) == 0)
-	{
-		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("\n Not enough free space, reduce \"nonces\"... (code = %u)\n", GetLastError());
-		CloseHandle(ofile);
-		CloseHandle(ofile_stream);
-		DeleteFileA((out_path + filename).c_str());
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
-		exit(-1);
-	}
-	
-	if (granted)
-	{
-		if (SetFileValidData(ofile, nonces * PLOT_SIZE) == 0)
+			if (out_path.empty() || (out_path.find(":") == std::string::npos))
+			{
+				char Buffer[MAX_PATH];
+				GetCurrentDirectoryA(MAX_PATH, Buffer);
+				std::string _path = Buffer;
+				out_path = _path + "\\" + out_path;
+
+			}
+			if (out_path.rfind("\\") < out_path.length() - 1) out_path += "\\";
+
+			SetConsoleTextAttribute(hConsole, colour::GRAY);
+			printf("\n\nChecking Directory Exists...\n");
+
+			if (!CreateDirectoryA(out_path.c_str(), nullptr) && ERROR_ALREADY_EXISTS != GetLastError())
+			{
+				SetConsoleTextAttribute(hConsole, colour::RED);
+				printf("\nCan't create directory %s for plots (Error %u)\n", out_path.c_str(), GetLastError());
+				SetConsoleTextAttribute(hConsole, colour::GRAY);
+				exit(-1);
+			}
+
+			SetConsoleTextAttribute(hConsole, colour::BLUE);
+			printf("\nWallet ID:  %llu\n", addr);
+			printf("Start Nonce:  %llu\n", startnonce);
+			printf("Nonces: %llu\n", nonces);
+			printf("End Nonce:  %llu\n", startnonce + nonces);
+		}
+
+		DWORD sectorsPerCluster;
+		DWORD bytesPerSector;
+		DWORD numberOfFreeClusters;
+		DWORD totalNumberOfClusters;
+		if (!GetDiskFreeSpaceA(out_path.c_str(), &sectorsPerCluster, &bytesPerSector, &numberOfFreeClusters, &totalNumberOfClusters))
 		{
 			SetConsoleTextAttribute(hConsole, colour::RED);
-			printf("\nSetFileValidData error (code = %u)\n", GetLastError());
-			CloseHandle(ofile);
-			CloseHandle(ofile_stream);
+			printf("\nGetDiskFreeSpace failed (Error %u)\n", GetLastError());
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			exit(-1);
 		}
-	}
+		if (nonces == 0) 	nonces = getFreeSpace(out_path.c_str()) / PLOT_SIZE;
+		nonces = (nonces / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
+		std::string filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces) + "_" + std::to_string(nonces);
+		BOOL granted = SetPrivilege();
+		ofile_stream = CreateFileA((out_path + filename + ":stream").c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-	unsigned long long freeRAM = getTotalSystemMemory();
-
-	if (memory) nonces_per_thread = memory * 2 / threads;
-	else nonces_per_thread = 1024; //(bytesPerSector / SCOOP_SIZE) * 1024 / threads;
-	
-	if (nonces < nonces_per_thread * threads) 	nonces_per_thread = nonces / threads;
-
-	// Check Free RAM
-	if (freeRAM < nonces_per_thread * threads * PLOT_SIZE * 2) nonces_per_thread = freeRAM / threads / PLOT_SIZE / 2;
-
-	nonces_per_thread = (nonces_per_thread / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
-
-	SetConsoleTextAttribute(hConsole, colour::TEAL);
-	printf("\nUsing %llu MB of %llu MB of usable RAM\n", nonces_per_thread * threads * 2 * PLOT_SIZE / 1024 / 1024, freeRAM / 1024 / 1024);
-
-
-	cache.fill(nullptr);
-	cache_write.fill(nullptr);
-	for (size_t i = 0; i < HASH_CAP; i++)
-	{
-		cache[i] = (char *)VirtualAlloc(nullptr, threads * nonces_per_thread * SCOOP_SIZE, MEM_COMMIT, PAGE_READWRITE);
-		cache_write[i] = (char *)VirtualAlloc(nullptr, threads * nonces_per_thread * SCOOP_SIZE, MEM_COMMIT, PAGE_READWRITE);
-		if ((cache[i] == nullptr) || (cache_write[i] == nullptr))
+		if (ofile_stream == INVALID_HANDLE_VALUE)
 		{
 			SetConsoleTextAttribute(hConsole, colour::RED);
-			printf(" Error allocating memory... Try lowering the amount of RAM \n");
-			CloseHandle(ofile);
-			CloseHandle(ofile_stream);
+			printf("\nError creating stream for file %s\n", (out_path + filename).c_str());
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			exit(-1);
 		}
-	}
-
-	unsigned long long t_timer;
-	unsigned long long x = 0;
-	unsigned long long leftover = 0;
-	unsigned long long nonces_in_work = 0;
-	start_timer = GetTickCount64();
-
-	while (nonces_done < nonces)
-	{
-		t_timer = GetTickCount64();
-
-		leftover = nonces - nonces_done;
-		if (leftover / (nonces_per_thread*threads) == 0)
+		unsigned long long nonces_done = read_from_stream();
+		if (nonces_done == nonces) // exit
 		{
-			if (leftover >= threads*(bytesPerSector / SCOOP_SIZE))
-			{
-				nonces_per_thread = leftover / threads;
-				//ajusting
-				nonces_per_thread = (nonces_per_thread / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
-			}
-			else
-			{
-				threads = 1;
-				nonces_per_thread = leftover;
-			}
+			SetConsoleTextAttribute(hConsole, colour::RED);
+			printf("\nFile is already finished. Delete the existing file to start over\n");
+			SetConsoleTextAttribute(hConsole, colour::GRAY);
+			CloseHandle(ofile_stream);
+			exit(0);
+		}
+		if (nonces_done > 0)
+		{
+			SetConsoleTextAttribute(hConsole, colour::YELLOW);
+			printf("\nContinuing with plot from nonce: %llu\n", nonces_done);
+		}
+
+		SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
+		printf("\nCreating file: %s\n", (out_path + filename).c_str());
+		ofile = CreateFileA((out_path + filename).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING, nullptr); //FILE_ATTRIBUTE_NORMAL     FILE_FLAG_WRITE_THROUGH |
+		if (ofile == INVALID_HANDLE_VALUE)
+		{
+			SetConsoleTextAttribute(hConsole, colour::RED);
+			printf("\nError creating file %s\n", (out_path + filename).c_str());
+			SetConsoleTextAttribute(hConsole, colour::GRAY);
+			CloseHandle(ofile_stream);
+			exit(-1);
 		}
 
 
-		for (size_t i = 0; i < threads; i++)
+		// Reserve Free Space
+		LARGE_INTEGER liDistanceToMove;
+		liDistanceToMove.QuadPart = nonces * PLOT_SIZE;
+		SetFilePointerEx(ofile, liDistanceToMove, nullptr, FILE_BEGIN);
+		if (SetEndOfFile(ofile) == 0)
 		{
-		#ifdef __AVX__
-			std::thread th(std::thread(AVX1::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
-		#else
-			std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
-		#endif
-			workers.push_back(move(th));
-			worker_status.push_back(0);
+			if (first_plot == true) {
+				SetConsoleTextAttribute(hConsole, colour::RED);
+				printf("\n Not enough free space, reduce \"nonces\"... (code = %u)\n", GetLastError());
+				CloseHandle(ofile);
+				CloseHandle(ofile_stream);
+				DeleteFileA((out_path + filename).c_str());
+				SetConsoleTextAttribute(hConsole, colour::GRAY);
+				exit(-1);
+			}
+			else {
+				SetConsoleTextAttribute(hConsole, colour::GREEN);
+				printf("\n Not enough free space to make the next plot, Cleaning up... (code = %u)\n", GetLastError());
+				printf("\n If you were expecting another plot, Try reducing the number of \"nonces\"");
+				CloseHandle(ofile);
+				CloseHandle(ofile_stream);
+				DeleteFileA((out_path + filename).c_str());
+				SetConsoleTextAttribute(hConsole, colour::GRAY);
+				printf("\n Done... Bye!");
+				exit(-1);
+			}
 		}
-		nonces_in_work = threads*nonces_per_thread;
-		SetConsoleTextAttribute(hConsole, colour::WHITE);
-		printf("\r[%llu%%] Generating nonces from %llu to %llu\t\t\t\t\t\t\n", (nonces_done * 100) / nonces, startnonce + nonces_done, startnonce + nonces_done + nonces_in_work);
-		SetConsoleTextAttribute(hConsole, colour::YELLOW);
 
-		do
+		if (granted)
 		{
-			Sleep(100);
-			x = 0;
-			for (auto it = worker_status.begin(); it != worker_status.end(); ++it) x += *it;
-			printf("\r[CPU] Nonces Done: %llu (%llu nonces/min)", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
-			printf("\t\t[HDD] Writing Scoops: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
-		} while (x < nonces_in_work);
-		SetConsoleTextAttribute(hConsole, colour::GRAY);
+			if (SetFileValidData(ofile, nonces * PLOT_SIZE) == 0)
+			{
+				SetConsoleTextAttribute(hConsole, colour::RED);
+				printf("\nSetFileValidData error (code = %u)\n", GetLastError());
+				CloseHandle(ofile);
+				CloseHandle(ofile_stream);
+				SetConsoleTextAttribute(hConsole, colour::GRAY);
+				exit(-1);
+			}
+		}
 
-		for (auto it = workers.begin(); it != workers.end(); ++it)	if (it->joinable()) it->join();
-		for (auto it = worker_status.begin(); it != worker_status.end(); ++it) *it = 0;
+		unsigned long long freeRAM = getTotalSystemMemory();
+
+		if (memory) nonces_per_thread = memory * 2 / threads;
+		else nonces_per_thread = 1024; //(bytesPerSector / SCOOP_SIZE) * 1024 / threads;
+
+		if (nonces < nonces_per_thread * threads) 	nonces_per_thread = nonces / threads;
+
+		// Check Free RAM
+		if (freeRAM < nonces_per_thread * threads * PLOT_SIZE * 2) nonces_per_thread = freeRAM / threads / PLOT_SIZE / 2;
+
+		nonces_per_thread = (nonces_per_thread / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
+
+		SetConsoleTextAttribute(hConsole, colour::TEAL);
+		printf("\nUsing %llu MB of %llu MB of usable RAM\n", nonces_per_thread * threads * 2 * PLOT_SIZE / 1024 / 1024, freeRAM / 1024 / 1024);
+
+
+		cache.fill(nullptr);
+		cache_write.fill(nullptr);
+		for (size_t i = 0; i < HASH_CAP; i++)
+		{
+			cache[i] = (char *)VirtualAlloc(nullptr, threads * nonces_per_thread * SCOOP_SIZE, MEM_COMMIT, PAGE_READWRITE);
+			cache_write[i] = (char *)VirtualAlloc(nullptr, threads * nonces_per_thread * SCOOP_SIZE, MEM_COMMIT, PAGE_READWRITE);
+			if ((cache[i] == nullptr) || (cache_write[i] == nullptr))
+			{
+				SetConsoleTextAttribute(hConsole, colour::RED);
+				printf(" Error allocating memory... Try lowering the amount of RAM \n");
+				CloseHandle(ofile);
+				CloseHandle(ofile_stream);
+				SetConsoleTextAttribute(hConsole, colour::GRAY);
+				exit(-1);
+			}
+		}
+
+		unsigned long long t_timer;
+		unsigned long long x = 0;
+		unsigned long long leftover = 0;
+		unsigned long long nonces_in_work = 0;
+		start_timer = GetTickCount64();
+
+		while (nonces_done < nonces) {
+
+			t_timer = GetTickCount64();
+			leftover = nonces - nonces_done;
+
+			if (leftover / (nonces_per_thread*threads) == 0)
+			{
+				if (leftover >= threads*(bytesPerSector / SCOOP_SIZE)) {
+					nonces_per_thread = leftover / threads;				
+					nonces_per_thread = (nonces_per_thread / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
+				}
+				else {
+					threads = 1;
+					nonces_per_thread = leftover;
+				}
+			}
+
+
+			for (size_t i = 0; i < threads; i++)
+			{
+		    	#ifdef __AVX__
+				std::thread th(std::thread(AVX1::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+				#else
+				std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+				#endif
+				workers.push_back(move(th));
+				worker_status.push_back(0);
+			}
+
+			nonces_in_work = threads*nonces_per_thread;
+			SetConsoleTextAttribute(hConsole, colour::WHITE);
+			printf("\r[%llu%%] Generating nonces from %llu to %llu\t\t\t\t\t\t\n", (nonces_done * 100) / nonces, startnonce + nonces_done, startnonce + nonces_done + nonces_in_work);
+			SetConsoleTextAttribute(hConsole, colour::YELLOW);
+
+			do
+			{
+				Sleep(100);
+				x = 0;
+				for (auto it = worker_status.begin(); it != worker_status.end(); ++it) x += *it;
+				printf("\r[CPU] Nonces Done: %llu (%llu nonces/min)", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
+				printf("\t\t[HDD] Writing Scoops: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
+			} while (x < nonces_in_work);
+			SetConsoleTextAttribute(hConsole, colour::GRAY);
+
+			for (auto it = workers.begin(); it != workers.end(); ++it)	if (it->joinable()) it->join();
+			for (auto it = worker_status.begin(); it != worker_status.end(); ++it) *it = 0;
+
+			while ((written_scoops != 0) && (written_scoops < HASH_CAP))
+			{
+				Sleep(100);
+				printf("\r[CPU] Nonces Done: %llu ", nonces_done + x);
+				printf("\t\t\t\t[HDD] Writing Scoops: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
+			}
+
+			if (writer.joinable())	writer.join();
+			cache_write.swap(cache);
+			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
+			nonces_done += nonces_in_work;
+
+		}
+
 
 		while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 		{
 			Sleep(100);
-			printf("\r[CPU] Nonces Done: %llu ", nonces_done + x);
-			printf("\t\t[HDD] Writing Scoops: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
+			printf("\r[CPU] Nonces Done: %llu", nonces_done + x);
+			printf("\t\t\t\t[HDD] Writing scoops: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
 		}
 
-		if (writer.joinable())	writer.join();	
-		cache_write.swap(cache);
-		writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
-		nonces_done += nonces_in_work;
+		printf("\nFinishing up writing this plot to file... Please wait...\n");
+		if (writer.joinable()) writer.join();
+		FlushFileBuffers(ofile);  //https://msdn.microsoft.com/en-en/library/windows/desktop/aa364218(v=vs.85).aspx
+		CloseHandle(ofile_stream);
+		CloseHandle(ofile);
+		printf("\rThat plot took %llu seconds...\n", (GetTickCount64() - start_timer) / 1000);
 
-	}
+		// Freeing up RAM
+		SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
+		printf("Releasing memory...\n ");
+		for (size_t i = 0; i < HASH_CAP; i++)
+		{
+			VirtualFree(cache[i], 0, MEM_RELEASE);VirtualFree(cache_write[i], 0, MEM_RELEASE);
+		}
 
+		// Update the user
+		SetConsoleTextAttribute(hConsole, colour::YELLOW);
+		printf("\nStarting the next plot, Please wait... \n");
 
-	while ((written_scoops != 0) && (written_scoops < HASH_CAP))
-	{
-		Sleep(100);
-		printf("\r[CPU] Nonces Done: %llu", nonces_done + x);
-		printf("\t\t[HDD] Writing scoops: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
-	}
-	
-	printf("\nFinishing up with this plot... Please wait..\n");
-	if (writer.joinable()) writer.join();
-	FlushFileBuffers(ofile);  //https://msdn.microsoft.com/en-en/library/windows/desktop/aa364218(v=vs.85).aspx
-	CloseHandle(ofile_stream);
-	CloseHandle(ofile);
-	printf("\rThat plot took %llu seconds..\n", (GetTickCount64() - start_timer) / 1000);
+		//Set flags for the next plot
+		get_args_next();
+		first_plot = false;
 
-	// Freeing up RAM
-	SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
-	printf("Releasing memory...\n ");
-	for (size_t i = 0; i < HASH_CAP; i++)
-	{VirtualFree(cache[i], 0, MEM_RELEASE);VirtualFree(cache_write[i], 0, MEM_RELEASE);}
+		// Next plot information
+		SetConsoleTextAttribute(hConsole, colour::BLUE);
+		printf("\n\nLast Start Nonce: %llu", startnonce);
+		printf("\nNonces Per Plot : %llu", nonces);
+		printf("\nNext Start Nonce: %llu ", startnonce + nonces + 1);
+		printf("\nThreads         : %llu ", threads);
 
+		// Set next Start Nonce
+		startnonce = startnonce + nonces + 1;	
 
-	SetConsoleTextAttribute(hConsole, colour::YELLOW);
-	printf("\nStarting the next plot, Please wait... \n");
-
-	
-	// Set next Start Nonce
-	startnonce = startnonce + nonces + 1;
-
-	//Set flags for the next plot
-	get_args_next();
-
-	SetConsoleTextAttribute(hConsole, colour::BLUE);
-	printf("\nLast Start Nonce: %llu", startnonce);
-	printf("\nNonces Per Plot : %llu", nonces);
-	printf("\nNext Start Nonce: %llu ", startnonce + nonces + 1);
-	printf("\nThreads         : %llu ", threads);
-
-	// Poor mans Loop
-	goto repeater;
+    // Loop until we run out of space then close gracefully (L377)
+	} while (true);
 }
 
