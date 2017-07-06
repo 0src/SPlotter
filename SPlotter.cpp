@@ -1,4 +1,3 @@
-
 #include "Nonce.h"
 #include <iostream>
 
@@ -22,14 +21,12 @@ unsigned long long memory = 0;
 std::string out_path = "";
 std::vector<std::string> argsp;
 
-
-
 BOOL SetPrivilege(void)
 {
 	LUID luid;
 	if (!LookupPrivilegeValue(
 		NULL,					// lookup privilege on local system
-		SE_MANAGE_VOLUME_NAME,  // privilege to lookup 
+		SE_MANAGE_VOLUME_NAME,  // privilege to lookup
 		&luid))					// receives LUID of privilege
 	{
 		SetConsoleTextAttribute(hConsole, colour::RED);
@@ -51,10 +48,10 @@ BOOL SetPrivilege(void)
 	tp.PrivilegeCount = 1;
 	tp.Privileges[0].Luid = luid;
 	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-	
+
 	// Enable the privilege or disable all privileges.
 
-	if (!AdjustTokenPrivileges(	hToken,	FALSE,	&tp, sizeof(TOKEN_PRIVILEGES),	(PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL))
+	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL))
 	{
 		SetConsoleTextAttribute(hConsole, colour::RED);
 		printf("AdjustTokenPrivileges error: %u\n", GetLastError());
@@ -65,7 +62,7 @@ BOOL SetPrivilege(void)
 	if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
 	{
 		SetConsoleTextAttribute(hConsole, colour::RED);
-		printf("PLOT REPEATING IS DISABLED.\nThe token does not have the specified privilege.\nFor faster writing you should restart plotter with Administrative rights.\n");
+		printf("\nThe token does not have the specified privilege.\nFor faster writing you should restart plotter with Administrative rights.\n");
 
 		SetConsoleTextAttribute(hConsole, colour::GRAY);
 		return FALSE;
@@ -80,7 +77,7 @@ unsigned long long getFreeSpace(const char* path)
 	ULARGE_INTEGER lpTotalNumberOfFreeBytes;
 
 	GetDiskFreeSpaceExA(path, &lpFreeBytesAvailable, &lpTotalNumberOfBytes, &lpTotalNumberOfFreeBytes);
-	
+
 	return lpFreeBytesAvailable.QuadPart;
 }
 
@@ -98,11 +95,11 @@ void writer_i(const unsigned long long offset, const unsigned long long nonces_t
 	LARGE_INTEGER start_time, end_time;
 	DWORD dwBytesWritten;
 	double PCFreq = 0.0;
-	
+
 	LARGE_INTEGER li;
 	QueryPerformanceFrequency(&li);
 	PCFreq = double(li.QuadPart);
-	
+
 	written_scoops = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&start_time);
 	for (size_t scoop = 0; scoop < HASH_CAP; scoop++)
@@ -122,11 +119,11 @@ void writer_i(const unsigned long long offset, const unsigned long long nonces_t
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			exit(-1);
 		}
-		written_scoops = scoop+1;
+		written_scoops = scoop + 1;
 	}
 	QueryPerformanceCounter((LARGE_INTEGER*)&end_time);
-	
-	write_to_stream(offset+nonces_to_write);
+
+	write_to_stream(offset + nonces_to_write);
 	return;
 }
 
@@ -194,7 +191,6 @@ bool is_number(const std::string& s)
 
 void get_args_start()
 {
-
 	for (auto & it : argsp)
 		for (auto & c : it) c = tolower(c);
 
@@ -224,7 +220,6 @@ void get_args_start()
 				memory *= 1024;
 			}
 		}
-
 	}
 }
 
@@ -277,15 +272,12 @@ int main(int argc, char* argv[])
 			printf("SPlotter for BURST\n");
 			printf("This software allows you to make lots of small pre-optimized plots automatically\n Please consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
 
-
-
 			if (out_path.empty() || (out_path.find(":") == std::string::npos))
 			{
 				char Buffer[MAX_PATH];
 				GetCurrentDirectoryA(MAX_PATH, Buffer);
 				std::string _path = Buffer;
 				out_path = _path + "\\" + out_path;
-
 			}
 			if (out_path.rfind("\\") < out_path.length() - 1) out_path += "\\";
 
@@ -358,7 +350,6 @@ int main(int argc, char* argv[])
 			exit(-1);
 		}
 
-
 		// Reserve Free Space
 		LARGE_INTEGER liDistanceToMove;
 		liDistanceToMove.QuadPart = nonces * PLOT_SIZE;
@@ -415,7 +406,6 @@ int main(int argc, char* argv[])
 		SetConsoleTextAttribute(hConsole, colour::TEAL);
 		printf("\nUsing %llu MB of %llu MB of usable RAM\n", nonces_per_thread * threads * 2 * PLOT_SIZE / 1024 / 1024, freeRAM / 1024 / 1024);
 
-
 		cache.fill(nullptr);
 		cache_write.fill(nullptr);
 		for (size_t i = 0; i < HASH_CAP; i++)
@@ -440,14 +430,13 @@ int main(int argc, char* argv[])
 		start_timer = GetTickCount64();
 
 		while (nonces_done < nonces) {
-
 			t_timer = GetTickCount64();
 			leftover = nonces - nonces_done;
 
 			if (leftover / (nonces_per_thread*threads) == 0)
 			{
 				if (leftover >= threads*(bytesPerSector / SCOOP_SIZE)) {
-					nonces_per_thread = leftover / threads;				
+					nonces_per_thread = leftover / threads;
 					nonces_per_thread = (nonces_per_thread / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
 				}
 				else {
@@ -456,14 +445,13 @@ int main(int argc, char* argv[])
 				}
 			}
 
-
 			for (size_t i = 0; i < threads; i++)
 			{
-		    	#ifdef __AVX__
-				std::thread th(std::thread(AVX1::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
-				#else
-				std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
-				#endif
+//#ifdef __AVX__
+				std::thread th(std::thread(AVX2::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+//#else
+	//			std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+//#endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
 			}
@@ -497,9 +485,7 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-
 		}
-
 
 		while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 		{
@@ -539,9 +525,8 @@ int main(int argc, char* argv[])
 		printf("\nThreads         : %llu ", threads);
 
 		// Set next Start Nonce
-		startnonce = startnonce + nonces + 1;	
+		startnonce = startnonce + nonces + 1;
 
-    // Loop until we run out of space then close gracefully (L377)
+		// Loop until we run out of space then close gracefully (L377)
 	} while (true);
 }
-
