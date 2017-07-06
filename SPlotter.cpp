@@ -447,13 +447,12 @@ int main(int argc, char* argv[])
 
 			for (size_t i = 0; i < threads; i++)
 			{
-#ifdef __AVX__
-				// Precompiled versions are either AVX1 or AVX2 and fall back to SSE4
-				// If you want AVX2 switch the comment around before you build.
-				// std::thread th(std::thread(AVX2::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+#ifdef __AVX2__
+				std::thread th(std::thread(AVX2::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+#elif __AVX__				
 				std::thread th(std::thread(AVX1::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
 #else
-	  		        std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+				std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
