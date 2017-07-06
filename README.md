@@ -61,7 +61,7 @@ Don't open issues for things you should already know or could ask google.
 I will not help you with Wine unless you pay me.
 
 
-![Imgur](http://i.imgur.com/6RNroRy.png)
+![Imgur](http://i.imgur.com/ejSocAq.png)
 
 
 ## XPlotter
