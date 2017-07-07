@@ -4,6 +4,8 @@ Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 
 **Implemented AVX2 Please Update**
 
+** Please take note of the new -repeat flag **
+
 
 SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full or it makes the number of plots you specify.
 
@@ -62,7 +64,7 @@ SPlotter is fully compatible with XPlotter.
 Don't open issues for things you should already know or could ask google.
 
 
-![Imgur](http://i.imgur.com/ejSocAq.png)
+![Imgur](http://i.imgur.com/p090cKV.png)
 
 
 ## XPlotter
