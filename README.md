@@ -5,7 +5,7 @@ Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 **Implemented AVX2 Please Update**
 
 
-SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full.
+SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full or it makes the number of plots you specify.
 
 SPlotter is also extremely useful for making larger plots to be copied to SMR/Seagate drives, You can safely copy the plot as soon as it starts working on the next one, It will take care of the start nonce for you so there is no risk of overlapping. I'm considering adding the ability to auto-move a plot to a specified drive.
 
@@ -14,7 +14,7 @@ SPlotter is also extremely useful for making larger plots to be copied to SMR/Se
 ```
 @setlocal
 @cd /d %~dp0 
-SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G
+SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10
 ```
 
 ### Usage Breakdown
@@ -26,6 +26,7 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -t: Number of threads on your CPU you want to use.
 -path: Path to your Plots.
 -mem: Amount of RAM to use while plotting.
+-repeat: number of plots you want to make (default is 1 plot if you don't specify)
 ```
 
 ## Threads
