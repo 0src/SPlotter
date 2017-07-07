@@ -1,14 +1,17 @@
 #include "Nonce.h"
 #include <iostream>
-
-enum colour { DARKBLUE = 1, DARKGREEN, DARKTEAL, DARKRED, DARKPINK, DARKYELLOW, GRAY, DARKGRAY, BLUE, GREEN, TEAL, RED, PINK, YELLOW, WHITE };
-std::array <char*, HASH_CAP * sizeof(char*)> cache;
-std::array <char*, HASH_CAP * sizeof(char*)> cache_write;
+#include <sstream>
 
 HANDLE hConsole = nullptr;
 HANDLE hHeap = nullptr;
 HANDLE ofile = nullptr;
 HANDLE ofile_stream = nullptr;
+
+enum colour { DARKBLUE = 1, DARKGREEN, DARKTEAL, DARKRED, DARKPINK, DARKYELLOW, GRAY, DARKGRAY, BLUE, GREEN, TEAL, RED, PINK, YELLOW, WHITE };
+std::array <char*, HASH_CAP * sizeof(char*)> cache;
+std::array <char*, HASH_CAP * sizeof(char*)> cache_write;
+std::string out_path = "";
+std::vector<std::string> argsp;
 std::vector<size_t> worker_status;
 unsigned long long written_scoops = 0;
 bool first_plot = true;
@@ -18,8 +21,7 @@ unsigned long long nonces = 0;
 unsigned long long threads = 1;
 unsigned long long nonces_per_thread = 0;
 unsigned long long memory = 0;
-std::string out_path = "";
-std::vector<std::string> argsp;
+unsigned long long lcounter = 0;
 
 BOOL SetPrivilege(void)
 {
@@ -220,6 +222,10 @@ void get_args_start()
 				memory *= 1024;
 			}
 		}
+		if ((argsp[i] == "-repeat") && is_number(argsp[++i]))
+		{
+			lcounter = strtoull(argsp[i].c_str(), 0, 10);
+		}
 	}
 }
 
@@ -254,9 +260,13 @@ int main(int argc, char* argv[])
 	argsp = args;
 	std::thread writer;
 	std::vector<std::thread> workers;
+
+	// Loop
 	do
 	{
 		unsigned long long start_timer = 0;
+
+		// First Plot
 		if (first_plot == true) {
 			get_args_start();
 
@@ -293,11 +303,14 @@ int main(int argc, char* argv[])
 			}
 
 			SetConsoleTextAttribute(hConsole, colour::BLUE);
-			printf("\nWallet ID:  %llu\n", addr);
-			printf("Start Nonce:  %llu\n", startnonce);
-			printf("Nonces: %llu\n", nonces);
-			printf("End Nonce:  %llu\n", startnonce + nonces);
+			printf("\nWallet ID : %llu\n", addr);
+			printf("Start Nonce : %llu\n", startnonce);
+			printf("Nonces      : %llu\n", nonces);
+			printf("End Nonce   : %llu\n", startnonce + nonces);
+			if (lcounter == 0) { printf("# of Plots  :  Just One, Not Repeating.\n"); }
+			else { printf("# of Plots  : %llu\n", lcounter); }
 		}
+		// First Plot
 
 		DWORD sectorsPerCluster;
 		DWORD bytesPerSector;
@@ -447,13 +460,12 @@ int main(int argc, char* argv[])
 
 			for (size_t i = 0; i < threads; i++)
 			{
-#ifdef __AVX__
-				// Precompiled versions are either AVX1 or AVX2 and fall back to SSE4
-				// If you want AVX2 switch the comment around before you build.
-				// std::thread th(std::thread(AVX2::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+#if defined __AVX2__
+				std::thread th(std::thread(AVX2::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+#elif defined (__AVX__)
 				std::thread th(std::thread(AVX1::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
-#else
-	  		        std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
+#else defined (__SSE4_1__) || __SSE4_2__)
+				std::thread th(std::thread(SSE4::work_i, i, addr, startnonce + nonces_done + i*nonces_per_thread, nonces_per_thread));
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
@@ -512,24 +524,36 @@ int main(int argc, char* argv[])
 			VirtualFree(cache[i], 0, MEM_RELEASE);VirtualFree(cache_write[i], 0, MEM_RELEASE);
 		}
 
-		// Update the user
-		SetConsoleTextAttribute(hConsole, colour::YELLOW);
-		printf("\nStarting the next plot, Please wait... \n");
+		// Check if we should loop
+		if (lcounter == 0) {
+			printf("Done plotting!... Exiting... \n");
+			Sleep(1000);
+			exit(-1);
+		}
+		else {
+			// Update the user
+			SetConsoleTextAttribute(hConsole, colour::YELLOW);
+			printf("\nStarting the next plot, Please wait... \n");
 
-		//Set flags for the next plot
-		get_args_next();
-		first_plot = false;
+			//Set flags for the next plot
+			get_args_next();
+			first_plot = false;
 
-		// Next plot information
-		SetConsoleTextAttribute(hConsole, colour::BLUE);
-		printf("\n\nLast Start Nonce: %llu", startnonce);
-		printf("\nNonces Per Plot : %llu", nonces);
-		printf("\nNext Start Nonce: %llu ", startnonce + nonces + 1);
-		printf("\nThreads         : %llu ", threads);
+			// Reduce Counter
+			lcounter = lcounter - 1;
 
-		// Set next Start Nonce
-		startnonce = startnonce + nonces + 1;
+			// Next plot information
+			SetConsoleTextAttribute(hConsole, colour::BLUE);
+			printf("\nLast Start Nonce: %llu", startnonce);
+			printf("\nNonces Per Plot : %llu", nonces);
+			printf("\nNext Start Nonce: %llu ", startnonce + nonces + 1);
+			printf("\nThreads         : %llu ", threads);
+			printf("\nPlots Remaining : %llu ", lcounter);
 
-		// Loop until we run out of space then close gracefully (L377)
+			// Set next Start Nonce
+			startnonce = startnonce + nonces + 1;
+		}
+
+		// Loop
 	} while (true);
 }
