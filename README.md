@@ -28,7 +28,7 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -t: Number of threads on your CPU you want to use.
 -path: Path to your Plots.
 -mem: Amount of RAM to use while plotting.
--repeat: number of plots you want to make (default is 1 plot if you don't specify)
+-repeat: number of extra plots you want to make of the same size.
 ```
 
 ## Threads
@@ -69,5 +69,5 @@ Don't open issues for things you should already know or could ask google.
 
 ## XPlotter
 
-You might prefer the [original software](https://github.com/Blagodarenko/XPlotter) this is based on if you don't specifically need SPlotter for the repeating functionality which XPlotter doesn't have.
+You might prefer the [original software](https://github.com/Blagodarenko/XPlotter) this is based on if you don't specifically need SPlotter for the repeating functionality which XPlotter doesn't have. Please be aware that XPlotter is only AVX1.
 
