@@ -458,6 +458,7 @@ int main(int argc, char* argv[])
 				}
 			}
 
+			
 			for (size_t i = 0; i < threads; i++)
 			{
 #if defined __AVX2__
