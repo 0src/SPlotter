@@ -16,7 +16,7 @@ SPlotter is also extremely useful for making larger plots to be copied to SMR/Se
 ```
 @setlocal
 @cd /d %~dp0 
-SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10
+SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots
 ```
 
 ### Usage Breakdown
@@ -29,6 +29,7 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -path: Path to your Plots.
 -mem: Amount of RAM to use while plotting.
 -repeat: number of extra plots you want to make of the same size.
+-move: Path you want your plots moved too, Path must exist.
 ```
 
 ## Threads
