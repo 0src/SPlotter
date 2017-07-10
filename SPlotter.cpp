@@ -1,6 +1,7 @@
 #include "Nonce.h"
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 HANDLE hConsole = nullptr;
 HANDLE hHeap = nullptr;
@@ -11,10 +12,15 @@ enum colour { DARKBLUE = 1, DARKGREEN, DARKTEAL, DARKRED, DARKPINK, DARKYELLOW, 
 std::array <char*, HASH_CAP * sizeof(char*)> cache;
 std::array <char*, HASH_CAP * sizeof(char*)> cache_write;
 std::string out_path = "";
+std::string g_move_path = "";
+std::string g_file_name_s = "";
+std::string g_file_name_d = "";
 std::vector<std::string> argsp;
 std::vector<size_t> worker_status;
+std::thread TMove;
 unsigned long long written_scoops = 0;
 bool first_plot = true;
+unsigned long long move_plots = 0;
 unsigned long long addr = 0;
 unsigned long long startnonce = 0;
 unsigned long long nonces = 0;
@@ -198,16 +204,26 @@ void get_args_start()
 
 	for (size_t i = 1; i < argsp.size() - 1; i++)
 	{
-		if ((argsp[i] == "-id") && is_number(argsp[++i]))
+		if ((argsp[i] == "-id") && is_number(argsp[++i])) {
 			addr = strtoull(argsp[i].c_str(), 0, 10);
-		if ((argsp[i] == "-sn") && is_number(argsp[++i]))
+		}
+		if ((argsp[i] == "-sn") && is_number(argsp[++i])) {
 			startnonce = strtoull(argsp[i].c_str(), 0, 10);
-		if ((argsp[i] == "-n") && is_number(argsp[++i]))
+		}
+		if ((argsp[i] == "-n") && is_number(argsp[++i])) {
 			nonces = strtoull(argsp[i].c_str(), 0, 10);
-		if ((argsp[i] == "-t") && is_number(argsp[++i]))
+		}
+		if ((argsp[i] == "-t") && is_number(argsp[++i])) {
 			threads = strtoull(argsp[i].c_str(), 0, 10);
-		if (argsp[i] == "-path")
+		}
+		if (argsp[i] == "-path") {
 			out_path = argsp[++i];
+		}
+		if (argsp[i] == "-move") {
+			g_move_path = argsp[++i];
+
+			move_plots = 1;
+		}
 		if (argsp[i] == "-mem")
 		{
 			i++;
@@ -254,9 +270,34 @@ void get_args_next()
 	}
 }
 
+std::wstring string2LPCWSTR(const std::string& s)
+{
+	int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r;
+}
+
+void MoveThread() {
+	printf("\nSpawned Mover Thread!");
+	printf("\nMove Path   : %s", g_file_name_d.c_str());
+	std::wstring gfns1 = string2LPCWSTR(g_file_name_s);
+	LPCWSTR g_file_name_s_l = gfns1.c_str();
+	std::wstring gfns2 = string2LPCWSTR(g_file_name_d);
+	LPCWSTR g_file_name_d_l = gfns2.c_str();
+	try {
+		MoveFileEx(g_file_name_s_l, g_file_name_d_l, MOVEFILE_COPY_ALLOWED);
+	}
+	catch (std::exception& e) { printf("\nMover Thread Died And/Or Failed!...( %s )\n", e); }
+}
+
 int main(int argc, char* argv[])
 {
-	std::vector<std::string> args(argv, &argv[(size_t)argc]);
+	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
 	std::thread writer;
 	std::vector<std::thread> workers;
@@ -290,6 +331,7 @@ int main(int argc, char* argv[])
 				out_path = _path + "\\" + out_path;
 			}
 			if (out_path.rfind("\\") < out_path.length() - 1) out_path += "\\";
+			if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
 
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			printf("\n\nChecking Directory Exists...\n");
@@ -307,8 +349,8 @@ int main(int argc, char* argv[])
 			printf("Start Nonce : %llu\n", startnonce);
 			printf("Nonces      : %llu\n", nonces);
 			printf("End Nonce   : %llu\n", startnonce + nonces);
-			if (lcounter == 0) { printf("# of Plots  :  Just One, Not Repeating.\n"); }
-			else { printf("# of Plots  : %llu\n", lcounter); }
+			if (lcounter == 1) { printf("# of Plots  : %llu\n", lcounter); }
+			if (move_plots == 1) { printf("Move Plots  : Enabled\n"); }
 		}
 		// First Plot
 
@@ -326,6 +368,7 @@ int main(int argc, char* argv[])
 		if (nonces == 0) 	nonces = getFreeSpace(out_path.c_str()) / PLOT_SIZE;
 		nonces = (nonces / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
 		std::string filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces) + "_" + std::to_string(nonces);
+
 		BOOL granted = SetPrivilege();
 		ofile_stream = CreateFileA((out_path + filename + ":stream").c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
@@ -352,7 +395,10 @@ int main(int argc, char* argv[])
 		}
 
 		SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
-		printf("\nCreating file: %s\n", (out_path + filename).c_str());
+		g_file_name_d = (g_move_path + filename);
+		g_file_name_s = (out_path + filename);
+		printf("\n--------------------------------------------");
+		printf("\nCreating file: %s\n", g_file_name_s.c_str());
 		ofile = CreateFileA((out_path + filename).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING, nullptr); //FILE_ATTRIBUTE_NORMAL     FILE_FLAG_WRITE_THROUGH |
 		if (ofile == INVALID_HANDLE_VALUE)
 		{
@@ -458,7 +504,6 @@ int main(int argc, char* argv[])
 				}
 			}
 
-			
 			for (size_t i = 0; i < threads; i++)
 			{
 #if defined __AVX2__
@@ -501,7 +546,7 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-		}
+				}
 
 		while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 		{
@@ -516,6 +561,7 @@ int main(int argc, char* argv[])
 		CloseHandle(ofile_stream);
 		CloseHandle(ofile);
 		printf("\rThat plot took %llu seconds...\n", (GetTickCount64() - start_timer) / 1000);
+		_flushall();
 
 		// Freeing up RAM
 		SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
@@ -555,6 +601,11 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 
+		// Create Mover Thread
+		if (move_plots == 1) {
+			std::thread TMove(MoveThread);
+			TMove.detach();
+		}
 		// Loop
-	} while (true);
-}
+			} while (true);
+		}
