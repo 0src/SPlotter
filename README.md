@@ -16,10 +16,10 @@ SPlotter is also extremely useful for making larger plots to be copied to SMR/Se
 ```
 @setlocal
 @cd /d %~dp0 
-SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots
+SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10
 ```
 
-### Usage Breakdown
+#### Usage Breakdown
 
 ```
 -id: Your BURST address numeric ID.
@@ -29,8 +29,22 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -path: Path to your Plots.
 -mem: Amount of RAM to use while plotting.
 -repeat: number of extra plots you want to make of the same size.
--move: Path you want your plots moved too, Path must exist.
+-move: Path you want your plots moved too, Path must exist. (Not in the releases, Build in VS2015)
 ```
+
+## Move Last Plot Automatically.
+
+
+You can make SPlotter move the last plot by adding the -move flag to your config eg.
+```
+@setlocal
+@cd /d %~dp0 
+SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots
+```
+
+This is only recommended for people who are using SSD drives to plot on or NVMe accererlated drives etc.
+
+A separate progress % indicator will show up for each plot that is still moving, Please do not delete plots or try move them manually while you are using this feature.
 
 ## Threads
 
@@ -38,8 +52,8 @@ You can find your number of threads with CPU-Z.
 
 If you have Hyperthreading, You can double your thread count.
 
-![Imgur](http://i.imgur.com/cv5pv7x.png)
-;)
+![Imgur](http://i.imgur.com/7PWoV97.png)
+
 
 ## Resuming a Plot
 
