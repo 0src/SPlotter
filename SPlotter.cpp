@@ -28,6 +28,34 @@ unsigned long long threads = 1;
 unsigned long long nonces_per_thread = 0;
 unsigned long long memory = 0;
 unsigned long long lcounter = 0;
+double Percentage;
+
+void printCopyProgress(double percentage)
+{
+	int val = (int)(percentage * 100);
+	printf(" |%d%", val);
+
+	// Flush to disk every time this is called
+	fflush(stdout);
+}
+
+DWORD CALLBACK CopyProgressRoutine(
+	LARGE_INTEGER TotalFileSize,
+	LARGE_INTEGER TotalBytesTransferred,
+	LARGE_INTEGER StreamSize,
+	LARGE_INTEGER StreamBytesTransferred,
+	DWORD dwStreamNumber,
+	DWORD dwCallbackReason,
+	HANDLE hSourceFile,
+	HANDLE hDestinationFile,
+	LPVOID lpData)
+{
+	// Calculate the percentage
+	Percentage = (double(StreamBytesTransferred.QuadPart) / double(StreamSize.QuadPart));
+	printCopyProgress(Percentage);
+	// Continue
+	return PROGRESS_CONTINUE;
+}
 
 BOOL SetPrivilege(void)
 {
@@ -290,7 +318,7 @@ void MoveThread() {
 	std::wstring gfns2 = string2LPCWSTR(g_file_name_d);
 	LPCWSTR g_file_name_d_l = gfns2.c_str();
 	try {
-		MoveFileEx(g_file_name_s_l, g_file_name_d_l, MOVEFILE_COPY_ALLOWED);
+		MoveFileWithProgress(g_file_name_s_l, g_file_name_d_l, CopyProgressRoutine, 0, MOVEFILE_COPY_ALLOWED);
 	}
 	catch (std::exception& e) { printf("\nMover Thread Died And/Or Failed!...( %s )\n", e); }
 }
@@ -527,8 +555,8 @@ int main(int argc, char* argv[])
 				Sleep(100);
 				x = 0;
 				for (auto it = worker_status.begin(); it != worker_status.end(); ++it) x += *it;
-				printf("\r[CPU] Nonces Done: %llu (%llu nonces/min)", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
-				printf("\t\t[HDD] Writing Scoops: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
+				printf("\r[CPU]N: %llu (%llu nonces/min)", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
+				printf("\t[HDD]S: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
 			} while (x < nonces_in_work);
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 
@@ -546,13 +574,13 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-				}
+		}
 
 		while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 		{
 			Sleep(100);
-			printf("\r[CPU] Nonces Done: %llu", nonces_done + x);
-			printf("\t\t\t\t[HDD] Writing scoops: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
+			printf("\r[CPU]N: %llu", nonces_done + x);
+			printf("\t[HDD]S: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
 		}
 
 		printf("\nFinishing up writing this plot to file... Please wait...\n");
@@ -607,5 +635,5 @@ int main(int argc, char* argv[])
 			TMove.detach();
 		}
 		// Loop
-			} while (true);
-		}
+	} while (true);
+}
