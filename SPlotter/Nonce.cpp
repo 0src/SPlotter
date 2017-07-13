@@ -290,7 +290,6 @@ namespace AVX2
 	}
 }
 
-
 namespace SSE4
 {
 	void work_i(const size_t local_num, const unsigned long long loc_addr, const unsigned long long local_startnonce, const unsigned long long local_nonces)

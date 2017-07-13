@@ -596,7 +596,7 @@ int main(int argc, char* argv[])
 		printf("Releasing memory...\n ");
 		for (size_t i = 0; i < HASH_CAP; i++)
 		{
-			VirtualFree(cache[i], 0, MEM_RELEASE);VirtualFree(cache_write[i], 0, MEM_RELEASE);
+			VirtualFree(cache[i], 0, MEM_RELEASE); VirtualFree(cache_write[i], 0, MEM_RELEASE);
 		}
 
 		// Check if we should loop
