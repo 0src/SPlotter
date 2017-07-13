@@ -279,8 +279,14 @@ void get_args_next()
 		for (auto & c : it) c = tolower(c);
 	for (size_t i = 1; i < argsp.size() - 1; i++)
 	{
-		if ((argsp[i] == "-t") && is_number(argsp[++i]))
+		if ((argsp[i] == "-t") && is_number(argsp[++i])) {
 			threads = strtoull(argsp[i].c_str(), 0, 10);
+		}
+		if (argsp[i] == "-move") {
+			g_move_path = argsp[++i];
+
+			move_plots = 1;
+		}
 		if (argsp[i] == "-mem")
 		{
 			i++;
@@ -338,7 +344,7 @@ int main(int argc, char* argv[])
 	{
 		unsigned long long start_timer = 0;
 
-		// First Plot
+		// First Loop
 		if (first_plot == true) {
 			get_args_start();
 
@@ -380,10 +386,10 @@ int main(int argc, char* argv[])
 			printf("Start Nonce : %llu\n", startnonce);
 			printf("Nonces      : %llu\n", nonces);
 			printf("End Nonce   : %llu\n", startnonce + nonces);
-			if (lcounter == 1) { printf("# of Plots  : %llu\n", lcounter); }
+			if (lcounter >= 1) { printf("# of Plots  : %llu\n", lcounter); }
 			if (move_plots == 1) { printf("Move Plots  : Enabled\n"); }
 		}
-		// First Plot
+		// First Loop
 
 		DWORD sectorsPerCluster;
 		DWORD bytesPerSector;
@@ -422,19 +428,20 @@ int main(int argc, char* argv[])
 		if (nonces_done > 0)
 		{
 			SetConsoleTextAttribute(hConsole, colour::YELLOW);
-			printf("\nContinuing with plot from nonce: %llu\n", nonces_done);
+			printf("\nContinuing from Nonce: %llu\n", nonces_done);
 		}
 
 		SetConsoleTextAttribute(hConsole, colour::DARKGRAY);
 		g_file_name_d = (g_move_path + filename);
 		g_file_name_s = (out_path + filename);
-		printf("\n--------------------------------------------");
-		printf("\nCreating file: %s\n", g_file_name_s.c_str());
+		printf("\n--------------------");
+		printf("\nFile: %s\n", g_file_name_s.c_str());
 		ofile = CreateFileA((out_path + filename).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING, nullptr); //FILE_ATTRIBUTE_NORMAL     FILE_FLAG_WRITE_THROUGH |
+
 		if (ofile == INVALID_HANDLE_VALUE)
 		{
 			SetConsoleTextAttribute(hConsole, colour::RED);
-			printf("\nError creating file %s\n", (out_path + filename).c_str());
+			printf("\nError creating or opening file %s\n", (out_path + filename).c_str());
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			CloseHandle(ofile_stream);
 			exit(-1);
@@ -569,8 +576,8 @@ int main(int argc, char* argv[])
 			while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 			{
 				Sleep(100);
-				printf("\r[CPU] Nonces Done: %llu ", nonces_done + x);
-				printf("\t\t\t\t[HDD] Writing Scoops: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
+				printf("\r[CPU] N: %llu ", nonces_done + x);
+				printf("\t\t[HDD] S: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
 			}
 
 			if (writer.joinable())	writer.join();
@@ -588,10 +595,12 @@ int main(int argc, char* argv[])
 
 		printf("\nFinishing up writing this plot to file... Please wait...\n");
 		if (writer.joinable()) writer.join();
-		FlushFileBuffers(ofile);  //https://msdn.microsoft.com/en-en/library/windows/desktop/aa364218(v=vs.85).aspx
+		FlushFileBuffers(ofile);
 		CloseHandle(ofile_stream);
 		CloseHandle(ofile);
 		printf("\rThat plot took %llu seconds...\n", (GetTickCount64() - start_timer) / 1000);
+
+		// Flush the rest
 		_flushall();
 
 		// Freeing up RAM
