@@ -33,7 +33,7 @@ double Percentage;
 void printCopyProgress(double percentage)
 {
 	int val = (int)(percentage * 100);
-	printf(" |%d%", val);
+	printf(" |%d%%", val);
 
 	// Flush to disk every time this is called
 	fflush(stdout);
@@ -320,7 +320,10 @@ void MoveThread() {
 	try {
 		MoveFileWithProgress(g_file_name_s_l, g_file_name_d_l, CopyProgressRoutine, 0, MOVEFILE_COPY_ALLOWED);
 	}
-	catch (std::exception& e) { printf("\nMover Thread Died And/Or Failed!...( %s )\n", e); }
+
+	catch (std::exception& e) {
+		printf("\n\nMover Thread Died... %s \n\n", e.what());
+	}
 }
 
 int main(int argc, char* argv[])

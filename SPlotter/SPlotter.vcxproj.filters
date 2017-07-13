@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Nonce.cpp" />
+    <ClCompile Include="SPlotter.cpp" />
+    <ClCompile Include="mshabal_avx1.c">
+      <Filter>ShabalImps</Filter>
+    </ClCompile>
+    <ClCompile Include="mshabal_avx2.c">
+      <Filter>ShabalImps</Filter>
+    </ClCompile>
+    <ClCompile Include="mshabal_sse4.c">
+      <Filter>ShabalImps</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mshabal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Nonce.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="shabal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{cedc0a9f-2627-499b-b348-c49794a299ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShabalImps">
+      <UniqueIdentifier>{78acfb07-b7b0-47c1-a19b-087f66954574}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="shabal.asm">
+      <Filter>Headers</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>
