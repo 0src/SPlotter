@@ -29,7 +29,7 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -path: Path to your Plots.
 -mem: Amount of RAM to use while plotting.
 -repeat: number of extra plots you want to make of the same size.
--move: Path you want your plots moved too, Path must exist. (Not in the releases, Build in VS2015)
+-move: Path you want your plots moved too, Path must exist.
 ```
 
 ## Move Last Plot Automatically.
@@ -46,15 +46,6 @@ This is only recommended for people who are using SSD drives to plot on or NVMe 
 
 A separate progress % indicator will show up for each plot that is still moving, Please do not delete plots or try move them manually while you are using this feature.
 
-## Threads
-
-You can find your number of threads with CPU-Z.
-
-If you have Hyperthreading, You can double your thread count.
-
-![Imgur](http://i.imgur.com/7PWoV97.png)
-
-
 ## Resuming a Plot
 
 To resume a plot you need to match the config to the existing plot file, eg.
@@ -65,6 +56,17 @@ To resume a plot you need to match the config to the existing plot file, eg.
 ```
 SPlotter_avx.exe -id 17559140197979902351 -sn 20001 -n 20000 -t 6 -path F:\burst\plots -mem 5G
 ```
+
+
+
+## Threads
+
+You can find your number of threads with CPU-Z.
+
+If you have Hyperthreading, You can double your thread count.
+
+![Imgur](http://i.imgur.com/7PWoV97.png)
+
 
 ## General
 
