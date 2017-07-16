@@ -11,7 +11,7 @@ Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 
 SPlotter is a light-weight BURST Plotter that creates optimized plots of a given size until the drive is full or it makes the number of plots you specify with the ability to auto-move the last plot to a destination drive.
 
-This is particularly useful for creating plots for SMR/Seagate drives or creating plots on an NVMe and moving them automatically.
+This is particularly useful for creating plots for SMR/Seagate/External drives or creating plots on an NVMe or SSD and moving them automatically.
 
 You can run more than one instance of SPlotter at a time without cannabilizing your CPU, This means if you have more than one drive to plot too that you can reduce the amount of CPU time you waste during write times. Read more below.
 
@@ -36,23 +36,32 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -mem: Amount of RAM to use while plotting.
 -repeat: number of extra plots you want to make of the same size.
 -move: Path you want your plots moved too, Path must exist.
+-RAW: Set to 1 if you are using an accelerated drive to move plots.
 ```
 
 ## Move Last Plot Automatically.
 
+#### -move
 
 You can make SPlotter move the last plot by adding the -move flag to your config eg.
+This will stop plotting and move the last plot to the destination you specify.
+
 ```
 @setlocal
 @cd /d %~dp0 
 SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots
 ```
+Please do not delete plots or try move them manually while you are using this feature. 
+Its a copy/move and doesn't delete the plot unless its successful.
 
-This is only recommended for people who are using SSD drives to plot on or NVMe accelerated drives etc.
+#### -RAW
 
-A separate progress % indicator will show up for the last plot that is still moving, Please do not delete plots or try move them manually while you are using this feature. Its worth noting that if you quit while a mover thread is active it won't corrupt the plot, Its a copy/move and doesn't delete the plot unless its successful, You will however have to move it manually if you do that.
-
-SPlotter will spawn as many mover threads as it needs (1 per plot) but you will only see progress from the last plot you started moving, This might change in the future but you can only fit so much stuff on 1 line :) 
+If you are using a SSD or an Accelerated drive then you should add -RAW flag to your config to enable reading and writing at the same time, The RAW feature is not meant for most drives.
+```
+@setlocal
+@cd /d %~dp0 
+SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots -RAW 1
+```
 
 
 ## Resuming a Plot
