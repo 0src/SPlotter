@@ -31,6 +31,8 @@ unsigned long long nonces_per_thread = 0;
 unsigned long long memory = 0;
 unsigned long long lcounter = 0;
 double Percentage;
+unsigned long long RAWp = 1;
+// Stop and Move :P
 
 // Real Sleep()
 void rSleep(unsigned int milli) {
@@ -40,7 +42,6 @@ void rSleep(unsigned int milli) {
 void printCopyProgress(double percentage)
 {
 	if (move_plots_p == 1) {
-		rSleep(200);
 		int val = (int)(percentage * 100);
 		printf(" |%d%%", val);
 	}
@@ -278,6 +279,10 @@ void get_args_start()
 		{
 			lcounter = strtoull(argsp[i].c_str(), 0, 10);
 		}
+		if ((argsp[i] == "-RAW") && is_number(argsp[++i]))
+		{
+			RAWp = strtoull(argsp[i].c_str(), 0, 10);
+		}
 	}
 }
 
@@ -362,7 +367,7 @@ void MoveThread() {
 
 int main(int argc, char* argv[])
 {
-	SetWindow(80, 25);
+	SetWindow(80, 22);
 	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
 	std::thread writer;
@@ -463,7 +468,7 @@ int main(int argc, char* argv[])
 		g_file_name_d = (g_move_path + filename);
 		g_file_name_s = (out_path + filename);
 		printf("\n--------------------\n");
-		printf("[SYS] File Path: %s\n", g_file_name_s.c_str());
+		printf("[SYS] FP: %s\n", g_file_name_s.c_str());
 		//printf("[DBG] Move Path: %s\n", g_file_name_d.c_str());
 		printf("--------------------\n");
 		ofile = CreateFileA((out_path + filename).c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_FLAG_NO_BUFFERING, nullptr); //FILE_ATTRIBUTE_NORMAL     FILE_FLAG_WRITE_THROUGH |
@@ -643,17 +648,23 @@ int main(int argc, char* argv[])
 			exit(-1);
 		}
 		else {
-			// Update the user
+			// Check if we should create a Mover Thread
+			if (move_plots == 1) {
+				move_plots_p = 1;
+				std::thread TMove(MoveThread);
+				// Check for Stop and Move
+				if (RAWp >= 1) {
+					TMove.detach();
+				}
+				else {
+					SetConsoleTextAttribute(hConsole, colour::YELLOW);
+					printf("\n[SYS] Stopping to Move the last Plot, Please wait...\n");
+					if (TMove.joinable()) { TMove.join(); }
+				}
+			}
 			SetConsoleTextAttribute(hConsole, colour::YELLOW);
 			printf("\n[SYS] Starting the next plot, Please wait...\n");
 
-			// Create Mover Thread
-			if (move_plots == 1) {
-				// Check Path
-				move_plots_p = 1;
-				std::thread TMove(MoveThread);
-				TMove.detach();
-			}
 			//Set flags for the next plot
 			get_args_next();
 			first_plot = false;
