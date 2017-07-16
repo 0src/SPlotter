@@ -354,6 +354,7 @@ void MoveThread() {
 
 int main(int argc, char* argv[])
 {
+	// Console Window Width / Height
 	SetWindow(80, 25);
 	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
