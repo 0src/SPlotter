@@ -36,7 +36,7 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 -mem: Amount of RAM to use while plotting.
 -repeat: number of extra plots you want to make of the same size.
 -move: Path you want your plots moved too, Path must exist.
--RAW: Set to 1 if you are using an accelerated drive to move plots.
+-RADW: Set to 1 if you are using an accelerated drive to move plots.
 ```
 
 ## Move Last Plot Automatically.
@@ -54,13 +54,13 @@ SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\pl
 Please do not delete plots or try move them manually while you are using this feature. 
 Its a copy/move and doesn't delete the plot unless its successful.
 
-#### -RAW
+#### -RADW
 
-If you are using a SSD or an Accelerated drive then you should add -RAW flag to your config to enable reading and writing at the same time, The RAW feature is not meant for most drives.
+If you are using a SSD or an Accelerated drive then you should add -RADW flag to your config to enable reading and double writing at the same time, The RADW feature is not meant for most drives.
 ```
 @setlocal
 @cd /d %~dp0 
-SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots -RAW 1
+SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots -RADW 1
 ```
 
 
