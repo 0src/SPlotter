@@ -85,11 +85,9 @@ The benefit of doing this is when one instance is writing to disc the other one 
 
 Even with a lower thread count this is faster overall if you need to plot multiple drives.
 
-You can use the repeat and -move flags while doing this.
+You can use the -repeat and -move flags while doing this.
 
 For best results start the second instance when you see the GREY writing scoops message.
-
-Future versions will automatically start making the next plot as the nonces from the last plot are moved from RAM to DISK, But for now this is the midground.
 
 If you run 2 or more instances at your best possible config you will not have a good time.
 
