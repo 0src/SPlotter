@@ -109,7 +109,7 @@ SPlotter is fully compatible with XPlotter.
 Don't open issues for things you should already know or could ask google.
 
 
-![Imgur](http://i.imgur.com/p090cKV.png)
+![Imgur](http://i.imgur.com/SC3rW92.png)
 
 
 ## XPlotter
