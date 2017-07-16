@@ -31,8 +31,8 @@ unsigned long long nonces_per_thread = 0;
 unsigned long long memory = 0;
 unsigned long long lcounter = 0;
 double Percentage;
-unsigned long long RAWp = 1;
-// Stop and Move :P
+unsigned long long RADWp = 1;
+// Read and Double Write
 
 // Real Sleep()
 void rSleep(unsigned int milli) {
@@ -279,9 +279,9 @@ void get_args_start()
 		{
 			lcounter = strtoull(argsp[i].c_str(), 0, 10);
 		}
-		if ((argsp[i] == "-RAW") && is_number(argsp[++i]))
+		if ((argsp[i] == "-RADW") && is_number(argsp[++i]))
 		{
-			RAWp = strtoull(argsp[i].c_str(), 0, 10);
+			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
 	}
 }
@@ -653,7 +653,7 @@ int main(int argc, char* argv[])
 				move_plots_p = 1;
 				std::thread TMove(MoveThread);
 				// Check for Stop and Move
-				if (RAWp >= 1) {
+				if (RADWp >= 1) {
 					TMove.detach();
 				}
 				else {
