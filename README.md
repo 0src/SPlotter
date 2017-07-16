@@ -48,9 +48,11 @@ You can make SPlotter move the last plot by adding the -move flag to your config
 SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots
 ```
 
-This is only recommended for people who are using SSD drives to plot on or NVMe accererlated drives etc.
+This is only recommended for people who are using SSD drives to plot on or NVMe accelerated drives etc.
 
-A separate progress % indicator will show up for each plot that is still moving, Please do not delete plots or try move them manually while you are using this feature.
+A separate progress % indicator will show up for the last plot that is still moving, Please do not delete plots or try move them manually while you are using this feature. Its worth noting that if you quit while a mover thread is active it won't corrupt the plot, Its a copy/move and doesn't delete the plot unless its successful, You will however have to move it manually if you do that.
+
+SPlotter will spawn as many mover threads as it needs (1 per plot) but you will only see progress from the last plot you started moving, This might change in the future but you can only fit so much stuff on 1 line :) 
 
 
 ## Resuming a Plot
