@@ -1,6 +1,7 @@
 #include "Nonce.h"
 #include <iostream>
 #include <sstream>
+#include <chrono>
 #include <thread>
 
 HANDLE hConsole = nullptr;
@@ -31,10 +32,15 @@ unsigned long long memory = 0;
 unsigned long long lcounter = 0;
 double Percentage;
 
+// Real Sleep()
+void rSleep(unsigned int milli) {
+	std::this_thread::sleep_for(std::chrono::milliseconds(milli));
+}
+
 void printCopyProgress(double percentage)
 {
 	if (move_plots_p == 1) {
-		Sleep(250);
+		rSleep(200);
 		int val = (int)(percentage * 100);
 		printf(" |%d%%", val);
 	}
@@ -336,9 +342,11 @@ void SetWindow(int Width, int Height)
 }
 
 void MoveThread() {
-	printf("[MOVE]");
+	SetConsoleTextAttribute(hConsole, colour::BLUE);
+	rSleep(150);
+	printf("\n[MOVE]");
 	printf("\n |Spawned Mover Thread!");
-	printf("\n |Move Path: %s", g_file_name_d.c_str());
+	printf("\n |Move Path: %s\n", g_file_name_d.c_str());
 	std::wstring gfns1 = string2LPCWSTR(g_file_name_s);
 	LPCWSTR g_file_name_s_l = gfns1.c_str();
 	std::wstring gfns2 = string2LPCWSTR(g_file_name_d);
@@ -354,7 +362,6 @@ void MoveThread() {
 
 int main(int argc, char* argv[])
 {
-	// Console Window Width / Height
 	SetWindow(80, 25);
 	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
@@ -402,7 +409,7 @@ int main(int argc, char* argv[])
 			}
 
 			SetConsoleTextAttribute(hConsole, colour::BLUE);
-			printf("[PLOT] \n");
+			printf("[PLOT]\n");
 			printf(" |Wallet ID : %llu\n", addr);
 			printf(" |Start Nonce : %llu\n", startnonce);
 			printf(" |Nonces      : %llu\n", nonces);
@@ -576,7 +583,7 @@ int main(int argc, char* argv[])
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
-		}
+			}
 
 			nonces_in_work = threads*nonces_per_thread;
 			SetConsoleTextAttribute(hConsole, colour::WHITE);
@@ -586,7 +593,7 @@ int main(int argc, char* argv[])
 			do
 			{
 				move_plots_p = 1;
-				Sleep(100);
+				rSleep(150);
 				x = 0;
 				for (auto it = worker_status.begin(); it != worker_status.end(); ++it) x += *it;
 				printf("\r[CPU] N: %llu (%llu nonces/min)  ", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
@@ -601,7 +608,7 @@ int main(int argc, char* argv[])
 			while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 			{
 				move_plots_p = 0;
-				Sleep(100);
+				rSleep(150);
 				printf("\r[HDD] Still Writing: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
 			}
 
@@ -609,7 +616,7 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-	}
+		}
 		move_plots_p = 0;
 		printf("\n[SYS] Cleaning up after the current plot... Please wait...\n");
 		if (writer.joinable()) writer.join();
@@ -632,7 +639,7 @@ int main(int argc, char* argv[])
 		// Check if we should loop
 		if (lcounter == 0) {
 			printf("\n[SYS] Done plotting!... Exiting...");
-			Sleep(1000);
+			rSleep(1000);
 			exit(-1);
 		}
 		else {
@@ -654,9 +661,12 @@ int main(int argc, char* argv[])
 			// Reduce Counter
 			lcounter = lcounter - 1;
 
+			// Suspend the thread for 300ms for sanity.
+			rSleep(300);
+
 			// Next plot information
 			SetConsoleTextAttribute(hConsole, colour::BLUE);
-			printf("[PLOT]");
+			printf("\n[PLOT]");
 			printf("\n |Last Start Nonce: %llu", startnonce);
 			printf("\n |Nonces Per Plot : %llu", nonces);
 			printf("\n |Next Start Nonce: %llu ", startnonce + nonces + 1);
@@ -667,5 +677,5 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 		// Loop
-} while (true);
+	} while (true);
 }
