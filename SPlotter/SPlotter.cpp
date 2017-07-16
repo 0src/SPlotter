@@ -31,7 +31,8 @@ unsigned long long nonces_per_thread = 0;
 unsigned long long memory = 0;
 unsigned long long lcounter = 0;
 double Percentage;
-unsigned long long RADWp = 1;
+unsigned long long RADWp = 0;
+unsigned long long mover_f = 0;
 // Read and Double Write
 
 // Real Sleep()
@@ -43,7 +44,10 @@ void printCopyProgress(double percentage)
 {
 	if (move_plots_p == 1) {
 		int val = (int)(percentage * 100);
-		printf(" |%d%%", val);
+		if (RADWp >= 1 || mover_f == 1) {
+			printf(" |%d%%", val);
+		}
+		else { printf("\r[SYS] Move Progress: %d%%", val); }
 	}
 }
 
@@ -352,6 +356,8 @@ void MoveThread() {
 	printf("\n[MOVE]");
 	printf("\n |Spawned Mover Thread!");
 	printf("\n |Move Path: %s\n", g_file_name_d.c_str());
+	if (RADWp >= 1) { printf("\n"); }
+	else { printf("\n[PROGRESS]\n"); }
 	std::wstring gfns1 = string2LPCWSTR(g_file_name_s);
 	LPCWSTR g_file_name_s_l = gfns1.c_str();
 	std::wstring gfns2 = string2LPCWSTR(g_file_name_d);
@@ -421,6 +427,7 @@ int main(int argc, char* argv[])
 			printf(" |End Nonce   : %llu\n", startnonce + nonces);
 			if (lcounter >= 1) { printf(" |# of Plots  : %llu\n", lcounter); }
 			if (move_plots == 1) { printf("[MOVE] \n"); printf(" |Move Plots  : Enabled\n"); }
+			if (RADWp >= 1) { printf(" |RADW Drive  : Enabled\n"); }
 		}
 		// First Loop
 
@@ -438,7 +445,7 @@ int main(int argc, char* argv[])
 		if (nonces == 0) 	nonces = getFreeSpace(out_path.c_str()) / PLOT_SIZE;
 		nonces = (nonces / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
 		std::string filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces) + "_" + std::to_string(nonces);
-
+		mover_f == 0;
 		BOOL granted = SetPrivilege();
 		ofile_stream = CreateFileA((out_path + filename + ":stream").c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
@@ -659,7 +666,10 @@ int main(int argc, char* argv[])
 				else {
 					SetConsoleTextAttribute(hConsole, colour::YELLOW);
 					printf("\n[SYS] Stopping to Move the last Plot, Please wait...\n");
-					if (TMove.joinable()) { TMove.join(); }
+					if (TMove.joinable()) {
+						TMove.join();
+					}
+					else { printf("\n[SYS] Too slow, Moving this plot in Background...\n"); TMove.detach(); mover_f == 1; }
 				}
 			}
 			SetConsoleTextAttribute(hConsole, colour::YELLOW);
