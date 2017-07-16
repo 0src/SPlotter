@@ -41,6 +41,8 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 
 ## Move Last Plot Automatically.
 
+![Imgur](http://i.imgur.com/60rUvFi.png)
+
 #### -move
 
 You can make SPlotter move the last plot by adding the -move flag to your config eg.
@@ -78,7 +80,10 @@ SPlotter_avx2.exe -id 17559140197979902351 -sn 20001 -n 20000 -t 6 -path F:\burs
 
 ## Writing more than 1 set of plots at a time.
 
-Because of the changes to how threading works in SPlotter you can run more than 1 Copy at a time and it won't cannibalize your CPU all the time. If you have more than 1 drive to plot this can be very useful because of the often slow scoop write times where your CPU and is basically doing nothing.
+Because of the changes to how threading works in SPlotter you can run more than 1 Copy at a time and it won't cannibalize your CPU all the time. If you have more than 1 drive to plot this can be very useful because of the often slow scoop write times where your CPU and is basically doing nothing and for certain kinds of externals that write extremely slow...
+
+3 Turtle Pace drives sharing a cpu without dying.
+![Imgur](http://i.imgur.com/Kzw4Hui.png)
 
 eg, If your best possible config is;
 ```
