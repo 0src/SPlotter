@@ -9,9 +9,13 @@ Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 **Please take note of the new -move flag**
 
 
-SPlotter is a light-weight BURST Plotter that creates pre-optimized plots of a given size until the drive is full or it makes the number of plots you specify.
+SPlotter is a light-weight BURST Plotter that creates optimized plots of a given size until the drive is full or it makes the number of plots you specify with the ability to auto-move the last plot to a destination drive.
 
-SPlotter is also extremely useful for making larger plots to be copied to SMR/Seagate drives, You can safely copy the plot as soon as it starts working on the next one, It will take care of the start nonce for you so there is no risk of overlapping. I'm considering adding the ability to auto-move a plot to a specified drive.
+This is particularly useful for creating plots for SMR/Seagate drives or creating plots on an NVMe and moving them automatically.
+
+You can run more than one instance of SPlotter at a time without cannabilizing your CPU, This means if you have more than one drive to plot too that you can reduce the amount of CPU time you waste during write times. Read more below.
+
+
 
 # Usage
 
