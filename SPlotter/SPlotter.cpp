@@ -46,7 +46,8 @@ void printCopyProgress(double percentage, double Speed)
 {
 	if (move_plots_p == 1) {
 		int val = (int)(percentage * 100);
-		int speed = (int)(Speed / 1024);
+		// Annoying speed correction
+		int speed = (int)(Speed / 1000);
 		if (RADWp >= 1 || mover_f == 1) {
 			printf(" |%d%%", val);
 		}
