@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 #include <ctime>
+#include <string>
 
 HANDLE hConsole = nullptr;
 HANDLE hHeap = nullptr;
@@ -46,12 +47,17 @@ void printCopyProgress(double percentage, double Speed)
 {
 	if (move_plots_p == 1) {
 		int val = (int)(percentage * 100);
-		// Annoying speed correction
 		int speed = (int)(Speed / 1000);
 		if (RADWp >= 1 || mover_f == 1) {
-			printf(" |%d%%", val);
+			printf(" |%3d%%", val);
 		}
-		else { printf("\r[SYS] Move Progress: %d%% |\t Speed: %dMb/s   ", val, speed); }
+
+		else {
+			// I hate printf
+			printf("\r%-20s%3d%%", "[SYS] Move Progress:", val);
+			printf("%15s%3d%14s", "   Move Speed: ", speed, "MB/s          ");
+			//	printf("\r[SYS] Move Progress: %d%%      |==|      Move Speed: .%d MB/s      \t", val, speed);
+		}
 	}
 }
 
@@ -125,6 +131,13 @@ BOOL SetPrivilege(void)
 		return FALSE;
 	}
 	return TRUE;
+}
+
+std::string StringToUpper(std::string strToConvert)
+{
+	std::transform(strToConvert.begin(), strToConvert.end(), strToConvert.begin(), ::toupper);
+
+	return strToConvert;
 }
 
 unsigned long long getFreeSpace(const char* path)
@@ -342,6 +355,13 @@ std::wstring string2LPCWSTR(const std::string& s)
 	return r;
 }
 
+wchar_t *cAToLPCWSTR(const char* ca)
+{
+	wchar_t* r = new wchar_t[4096];
+	MultiByteToWideChar(CP_ACP, 0, ca, -1, r, 4096);
+	return r;
+}
+
 void SetWindow(int Width, int Height)
 {
 	_COORD coord;
@@ -382,6 +402,9 @@ void MoveThread() {
 
 int main(int argc, char* argv[])
 {
+	std::string Cw = "SPlotter v1.8.1 - BURST Plotter - AVX2 Version";
+	std::string CW = StringToUpper(Cw);
+	SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 	SetWindow(80, 22);
 	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
@@ -396,6 +419,18 @@ int main(int argc, char* argv[])
 
 		if (first_plot == true) {
 			get_args_start();
+
+			// Add Out Path to title
+			if (move_plots = 1) {
+				std::string Cw = "SPlotter v1.8.1 - AVX2 Version  | " + out_path + " | " + g_move_path;
+				std::string CW = StringToUpper(Cw);
+				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
+			}
+			else {
+				std::string Cw = "SPlotter v1.8.1 - AVX2 Version  | " + out_path;
+				std::string CW = StringToUpper(Cw);
+				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
+			}
 
 			hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 			if (hConsole == NULL) {
@@ -466,7 +501,7 @@ int main(int argc, char* argv[])
 			exit(-1);
 		}
 		unsigned long long nonces_done = read_from_stream();
-		if (nonces_done == nonces) // exit
+		if (nonces_done == nonces)
 		{
 			SetConsoleTextAttribute(hConsole, colour::RED);
 			printf("\n[SYS] File is already finished. Delete the existing file to start over\n");
@@ -542,7 +577,7 @@ int main(int argc, char* argv[])
 		unsigned long long freeRAM = getTotalSystemMemory();
 
 		if (memory) nonces_per_thread = memory * 2 / threads;
-		else nonces_per_thread = 1024; //(bytesPerSector / SCOOP_SIZE) * 1024 / threads;
+		else nonces_per_thread = 1024; // Nope
 
 		if (nonces < nonces_per_thread * threads) 	nonces_per_thread = nonces / threads;
 
@@ -556,6 +591,8 @@ int main(int argc, char* argv[])
 
 		cache.fill(nullptr);
 		cache_write.fill(nullptr);
+
+		// Allocate Memory as cache
 		for (size_t i = 0; i < HASH_CAP; i++)
 		{
 			cache[i] = (char *)VirtualAlloc(nullptr, threads * nonces_per_thread * SCOOP_SIZE, MEM_COMMIT, PAGE_READWRITE);
@@ -636,16 +673,26 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-		}
+				}
+
 		move_plots_p = 0;
-		printf("\n[SYS] Cleaning up after the current plot... Please wait...\n");
-		if (writer.joinable()) writer.join();
+
+		// Check if the writer is still writing out the windows cache (Almost always)
+		if (writer.joinable()) {
+			printf("\n[SYS] Waiting for Windows cache to catch up. . . Please wait...\n");
+
+			writer.join();
+			// If you turn off write caching on your disc this doesn't take anywhere near as long.
+		}
+		else { printf("\n[SYS] Cleaning up after the last plot...\n"); }
+
+		// Flush the buffer and close handles
 		FlushFileBuffers(ofile);
 		CloseHandle(ofile_stream);
 		CloseHandle(ofile);
 		printf("\r[SYS] That plot took %llu seconds...\n", (GetTickCount64() - start_timer) / 1000);
 
-		// Flush the rest
+		// Flush the rest :)
 		_flushall();
 
 		// Freeing up RAM
@@ -708,5 +755,5 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 		// Loop
-	} while (true);
-}
+			} while (true);
+		}
