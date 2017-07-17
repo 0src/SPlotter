@@ -35,9 +35,7 @@ double Percentage;
 double Speed;
 unsigned long long RADWp = 0;
 unsigned long long mover_f = 0;
-time_t time2;
-
-// Read and Double Write
+time_t timeStartm;
 
 // Real Sleep()
 void rSleep(unsigned int milli) {
@@ -52,7 +50,7 @@ void printCopyProgress(double percentage, double Speed)
 		if (RADWp >= 1 || mover_f == 1) {
 			printf(" |%d%%", val);
 		}
-		else { printf("\r[SYS] Move Progress: %d%% | Speed: %dMb/s   ", val, speed); }
+		else { printf("\r[SYS] Move Progress: %d%% |\t Speed: %dMb/s   ", val, speed); }
 	}
 }
 
@@ -67,9 +65,9 @@ DWORD CALLBACK CopyProgressRoutine(
 	HANDLE hDestinationFile,
 	LPVOID lpData)
 {
-	// Calculate Speed (Bytes Transferred / (TimeStart - TimeFinish) / Bytes)
-	time_t time1 = std::time(nullptr);
-	Speed = (double(StreamBytesTransferred.QuadPart) / (time1 - time2) / 1024);
+	// Calculate Speed (Bytes Transferred / (TimeFinish - TimeStart) / Bytes)
+	time_t timeEndm = std::time(nullptr);
+	Speed = (double(StreamBytesTransferred.QuadPart) / (timeEndm - timeStartm) / 1024);
 
 	// Calculate the percentage
 	Percentage = (double(StreamBytesTransferred.QuadPart) / double(StreamSize.QuadPart));
@@ -605,7 +603,7 @@ int main(int argc, char* argv[])
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
-		}
+			}
 
 			nonces_in_work = threads*nonces_per_thread;
 			SetConsoleTextAttribute(hConsole, colour::WHITE);
@@ -633,12 +631,11 @@ int main(int argc, char* argv[])
 				rSleep(150);
 				printf("\r[HDD] Still Writing: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
 			}
-
 			if (writer.joinable())	writer.join();
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-	}
+		}
 		move_plots_p = 0;
 		printf("\n[SYS] Cleaning up after the current plot... Please wait...\n");
 		if (writer.joinable()) writer.join();
@@ -658,31 +655,32 @@ int main(int argc, char* argv[])
 			VirtualFree(cache[i], 0, MEM_RELEASE); VirtualFree(cache_write[i], 0, MEM_RELEASE);
 		}
 
+		// Check if we should create a Mover Thread
+		if (move_plots == 1) {
+			move_plots_p = 1;
+			std::thread TMove(MoveThread);
+			timeStartm = std::time(nullptr);
+			// Check for Stop and Move
+			if (RADWp >= 1) {
+				TMove.detach();
+			}
+			else {
+				SetConsoleTextAttribute(hConsole, colour::YELLOW);
+				printf("\n[SYS] Stopping to Move the last Plot, Please wait...\n");
+				if (TMove.joinable()) {
+					TMove.join();
+				}
+				else { printf("\n[SYS] Too slow, Moving this plot in Background...\n"); TMove.detach(); mover_f = 1; }
+			}
+		}
+
 		// Check if we should loop
 		if (lcounter == 0) {
-			printf("\n[SYS] Done plotting!... Exiting...");
+			printf("\n[SYS] Done plotting!...\nExiting...\n");
 			rSleep(1000);
 			exit(-1);
 		}
 		else {
-			// Check if we should create a Mover Thread
-			if (move_plots == 1) {
-				move_plots_p = 1;
-				std::thread TMove(MoveThread);
-				time2 = std::time(nullptr);
-				// Check for Stop and Move
-				if (RADWp >= 1) {
-					TMove.detach();
-				}
-				else {
-					SetConsoleTextAttribute(hConsole, colour::YELLOW);
-					printf("\n[SYS] Stopping to Move the last Plot, Please wait...\n");
-					if (TMove.joinable()) {
-						TMove.join();
-					}
-					else { printf("\n[SYS] Too slow, Moving this plot in Background...\n"); TMove.detach(); mover_f = 1; }
-				}
-			}
 			SetConsoleTextAttribute(hConsole, colour::YELLOW);
 			printf("\n[SYS] Starting the next plot, Please wait...\n");
 
@@ -709,5 +707,5 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 		// Loop
-} while (true);
+	} while (true);
 }
