@@ -3,6 +3,7 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <ctime>
 
 HANDLE hConsole = nullptr;
 HANDLE hHeap = nullptr;
@@ -31,8 +32,11 @@ unsigned long long nonces_per_thread = 0;
 unsigned long long memory = 0;
 unsigned long long lcounter = 0;
 double Percentage;
+double Speed;
 unsigned long long RADWp = 0;
 unsigned long long mover_f = 0;
+time_t time2;
+
 // Read and Double Write
 
 // Real Sleep()
@@ -40,14 +44,15 @@ void rSleep(unsigned int milli) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(milli));
 }
 
-void printCopyProgress(double percentage)
+void printCopyProgress(double percentage, double Speed)
 {
 	if (move_plots_p == 1) {
 		int val = (int)(percentage * 100);
+		int speed = (int)(Speed / 1024);
 		if (RADWp >= 1 || mover_f == 1) {
 			printf(" |%d%%", val);
 		}
-		else { printf("\r[SYS] Move Progress: %d%%", val); }
+		else { printf("\r[SYS] Move Progress: %d%% | Speed: %dMb/s   ", val, speed); }
 	}
 }
 
@@ -62,9 +67,14 @@ DWORD CALLBACK CopyProgressRoutine(
 	HANDLE hDestinationFile,
 	LPVOID lpData)
 {
+	// Calculate Speed (Bytes Transferred / (TimeStart - TimeFinish) / Bytes)
+	time_t time1 = std::time(nullptr);
+	Speed = (double(StreamBytesTransferred.QuadPart) / (time1 - time2) / 1024);
+
 	// Calculate the percentage
 	Percentage = (double(StreamBytesTransferred.QuadPart) / double(StreamSize.QuadPart));
-	printCopyProgress(Percentage);
+
+	printCopyProgress(Percentage, Speed);
 	// Continue
 	return PROGRESS_CONTINUE;
 }
@@ -445,7 +455,7 @@ int main(int argc, char* argv[])
 		if (nonces == 0) 	nonces = getFreeSpace(out_path.c_str()) / PLOT_SIZE;
 		nonces = (nonces / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
 		std::string filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces) + "_" + std::to_string(nonces);
-		mover_f == 0;
+		mover_f = 0;
 		BOOL granted = SetPrivilege();
 		ofile_stream = CreateFileA((out_path + filename + ":stream").c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
@@ -595,7 +605,7 @@ int main(int argc, char* argv[])
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
-			}
+		}
 
 			nonces_in_work = threads*nonces_per_thread;
 			SetConsoleTextAttribute(hConsole, colour::WHITE);
@@ -628,7 +638,7 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-		}
+	}
 		move_plots_p = 0;
 		printf("\n[SYS] Cleaning up after the current plot... Please wait...\n");
 		if (writer.joinable()) writer.join();
@@ -659,6 +669,7 @@ int main(int argc, char* argv[])
 			if (move_plots == 1) {
 				move_plots_p = 1;
 				std::thread TMove(MoveThread);
+				time2 = std::time(nullptr);
 				// Check for Stop and Move
 				if (RADWp >= 1) {
 					TMove.detach();
@@ -669,7 +680,7 @@ int main(int argc, char* argv[])
 					if (TMove.joinable()) {
 						TMove.join();
 					}
-					else { printf("\n[SYS] Too slow, Moving this plot in Background...\n"); TMove.detach(); mover_f == 1; }
+					else { printf("\n[SYS] Too slow, Moving this plot in Background...\n"); TMove.detach(); mover_f = 1; }
 				}
 			}
 			SetConsoleTextAttribute(hConsole, colour::YELLOW);
@@ -698,5 +709,5 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 		// Loop
-	} while (true);
+} while (true);
 }
