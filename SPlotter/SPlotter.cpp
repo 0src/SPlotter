@@ -49,7 +49,9 @@ void printCopyProgress(double percentage, double Speed)
 		int val = (int)(percentage * 100);
 		int speed = (int)(Speed / 1000);
 		if (RADWp >= 1 || mover_f == 1) {
-			printf(" |%3d%%", val);
+			// RACE MODE, Literally....
+			rSleep(250);
+			printf("|%d%%|    ", val);
 		}
 
 		else {
@@ -78,6 +80,7 @@ DWORD CALLBACK CopyProgressRoutine(
 	// Calculate the percentage
 	Percentage = (double(StreamBytesTransferred.QuadPart) / double(StreamSize.QuadPart));
 
+	PROGRESS_CONTINUE;
 	printCopyProgress(Percentage, Speed);
 	// Continue
 	return PROGRESS_CONTINUE;
@@ -303,9 +306,10 @@ void get_args_start()
 		if (argsp[i] == "-move") {
 			g_move_path = argsp[++i];
 			move_plots = 1;
+			if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
 		}
 
-		if ((argsp[i] == "-RADW") && is_number(argsp[++i]))
+		if ((argsp[i] == "-radw") && is_number(argsp[++i]))
 		{
 			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
@@ -339,6 +343,10 @@ void get_args_next()
 			g_move_path = argsp[++i];
 			if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
 			move_plots = 1;
+		}
+		if ((argsp[i] == "-radw") && is_number(argsp[++i]))
+		{
+			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
 	}
 }
@@ -404,19 +412,17 @@ int main(int argc, char* argv[])
 {
 	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
-	std::string Cw = "SPlotter v1.8.1 - Standard Version";
+	std::string Cw = "SPlotter v1.8.2 - Standard ";
 	std::string CW = StringToUpper(Cw);
 	SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 	SetWindow(80, 22);
-
-	if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
 	std::thread writer;
 	std::vector<std::thread> workers;
-
 	// Loop
 	do
 	{
 		unsigned long long start_timer = 0;
+		move_plots_p = 0;
 		// First Loop
 
 		if (first_plot == true) {
@@ -424,12 +430,12 @@ int main(int argc, char* argv[])
 
 			// Add Out Path to title
 			if (move_plots == 1) {
-				std::string Cw = "SPlotter v1.8.1 - Mover Version  | " + out_path + " | " + g_move_path;
+				std::string Cw = "SPlotter v1.8.2 - Standard Mover  | " + out_path + " | " + g_move_path;
 				std::string CW = StringToUpper(Cw);
 				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 			}
 			else {
-				std::string Cw = "SPlotter v1.8.1 - Standard Version  | " + out_path;
+				std::string Cw = "SPlotter v1.8.2 - Standard  | " + out_path;
 				std::string CW = StringToUpper(Cw);
 				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 			}
@@ -642,7 +648,7 @@ int main(int argc, char* argv[])
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
-		}
+			}
 
 			nonces_in_work = threads*nonces_per_thread;
 			SetConsoleTextAttribute(hConsole, colour::WHITE);
@@ -652,11 +658,16 @@ int main(int argc, char* argv[])
 			do
 			{
 				move_plots_p = 1;
-				rSleep(150);
+				rSleep(64);
 				x = 0;
 				for (auto it = worker_status.begin(); it != worker_status.end(); ++it) x += *it;
-				printf("\r[CPU] N: %llu (%llu nonces/min)  ", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
-				printf("\t\t[HDD] WS: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
+				if (RADWp == 1) {
+					printf("\r[CPU] N: %llu (%llu nonces/min)  [HDD] WS: %.2f%%     ", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer), (double)(written_scoops * 100) / (double)HASH_CAP);
+				}
+				else {
+					printf("\r[CPU] N: %llu (%llu nonces/min)  ", nonces_done + x, x * 60000 / (GetTickCount64() - t_timer));
+					printf("\t\t[HDD] WS: %.2f%%", (double)(written_scoops * 100) / (double)HASH_CAP);
+				}
 			} while (x < nonces_in_work);
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 
@@ -667,14 +678,14 @@ int main(int argc, char* argv[])
 			while ((written_scoops != 0) && (written_scoops < HASH_CAP))
 			{
 				move_plots_p = 0;
-				rSleep(150);
+				rSleep(64);
 				printf("\r[HDD] Still Writing: %.2f%% ", (double)(written_scoops * 100) / (double)HASH_CAP);
 			}
 			if (writer.joinable())	writer.join();
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-	}
+		}
 
 		move_plots_p = 0;
 
@@ -756,5 +767,5 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 		// Loop
-} while (true);
+	} while (true);
 }
