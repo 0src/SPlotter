@@ -56,7 +56,6 @@ void printCopyProgress(double percentage, double Speed)
 			// I hate printf
 			printf("\r%-20s%3d%%", "[SYS] Move Progress:", val);
 			printf("%15s%3d%14s", "   Move Speed: ", speed, "MB/s          ");
-			//	printf("\r[SYS] Move Progress: %d%%      |==|      Move Speed: .%d MB/s      \t", val, speed);
 		}
 	}
 }
@@ -282,11 +281,6 @@ void get_args_start()
 			out_path = argsp[++i];
 			if (out_path.rfind("\\") < out_path.length() - 1) out_path += "\\";
 		}
-		if (argsp[i] == "-move") {
-			g_move_path = argsp[++i];
-			if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
-			move_plots = 1;
-		}
 		if (argsp[i] == "-mem")
 		{
 			i++;
@@ -305,6 +299,12 @@ void get_args_start()
 		{
 			lcounter = strtoull(argsp[i].c_str(), 0, 10);
 		}
+
+		if (argsp[i] == "-move") {
+			g_move_path = argsp[++i];
+			move_plots = 1;
+		}
+
 		if ((argsp[i] == "-RADW") && is_number(argsp[++i]))
 		{
 			RADWp = strtoull(argsp[i].c_str(), 0, 10);
@@ -321,11 +321,6 @@ void get_args_next()
 		if ((argsp[i] == "-t") && is_number(argsp[++i])) {
 			threads = strtoull(argsp[i].c_str(), 0, 10);
 		}
-		if (argsp[i] == "-move") {
-			g_move_path = argsp[++i];
-			if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
-			move_plots = 1;
-		}
 		if (argsp[i] == "-mem")
 		{
 			i++;
@@ -339,6 +334,11 @@ void get_args_next()
 			case 'G':
 				memory *= 1024;
 			}
+		}
+		if (argsp[i] == "-move") {
+			g_move_path = argsp[++i];
+			if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
+			move_plots = 1;
 		}
 	}
 }
@@ -402,12 +402,14 @@ void MoveThread() {
 
 int main(int argc, char* argv[])
 {
-	std::string Cw = "SPlotter v1.8.1 - BURST Plotter - AVX2 Version";
+	std::vector<std::string> args(argv, &argv[argc]);
+	argsp = args;
+	std::string Cw = "SPlotter v1.8.1 - Standard Version";
 	std::string CW = StringToUpper(Cw);
 	SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 	SetWindow(80, 22);
-	std::vector<std::string> args(argv, &argv[argc]);
-	argsp = args;
+
+	if (g_move_path.rfind("\\") < g_move_path.length() - 1) g_move_path += "\\";
 	std::thread writer;
 	std::vector<std::thread> workers;
 
@@ -421,13 +423,13 @@ int main(int argc, char* argv[])
 			get_args_start();
 
 			// Add Out Path to title
-			if (move_plots = 1) {
-				std::string Cw = "SPlotter v1.8.1 - AVX2 Version  | " + out_path + " | " + g_move_path;
+			if (move_plots == 1) {
+				std::string Cw = "SPlotter v1.8.1 - Mover Version  | " + out_path + " | " + g_move_path;
 				std::string CW = StringToUpper(Cw);
 				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 			}
 			else {
-				std::string Cw = "SPlotter v1.8.1 - AVX2 Version  | " + out_path;
+				std::string Cw = "SPlotter v1.8.1 - Standard Version  | " + out_path;
 				std::string CW = StringToUpper(Cw);
 				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 			}
@@ -449,7 +451,6 @@ int main(int argc, char* argv[])
 			}
 
 			SetConsoleTextAttribute(hConsole, colour::GREEN);
-			printf("SPlotter\n");
 			printf("Multi-purpose BURST Plotter\nPlease consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
 
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
@@ -470,7 +471,7 @@ int main(int argc, char* argv[])
 			printf(" |Nonces      : %llu\n", nonces);
 			printf(" |End Nonce   : %llu\n", startnonce + nonces);
 			if (lcounter >= 1) { printf(" |# of Plots  : %llu\n", lcounter); }
-			if (move_plots == 1) { printf("[MOVE] \n"); printf(" |Move Plots  : Enabled\n"); }
+			if (move_plots >= 1) { printf("[MOVE] \n"); printf(" |Move Plots  : Enabled\n"); }
 			if (RADWp >= 1) { printf(" |RADW Drive  : Enabled\n"); }
 		}
 		// First Loop
@@ -641,7 +642,7 @@ int main(int argc, char* argv[])
 #endif
 				workers.push_back(move(th));
 				worker_status.push_back(0);
-			}
+		}
 
 			nonces_in_work = threads*nonces_per_thread;
 			SetConsoleTextAttribute(hConsole, colour::WHITE);
@@ -673,7 +674,7 @@ int main(int argc, char* argv[])
 			cache_write.swap(cache);
 			writer = std::thread(writer_i, nonces_done, nonces_in_work, nonces);
 			nonces_done += nonces_in_work;
-				}
+	}
 
 		move_plots_p = 0;
 
@@ -755,5 +756,5 @@ int main(int argc, char* argv[])
 			startnonce = startnonce + nonces + 1;
 		}
 		// Loop
-			} while (true);
-		}
+} while (true);
+}
