@@ -62,8 +62,13 @@ Its a copy/move and doesn't delete the plot unless its successful.
 SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -mem 5G -repeat 10 -move E:\burst\plots -RADW 1
 ```
 
-If you are using a SSD or an Accelerated drive then you should add -RADW flag to your config to enable reading and double writing at the same time, The RADW feature is not meant for most drives.
+This changes the default behavior of -move and makes it so it doesn't stop to move the last plot and starts working on the next plot immediately. This feature is not meant for most drives.
 
+If you are using a SSD or an Accelerated drive then you should add -RADW flag to your config.
+
+You can only see the progress of last plot that started moving because if your drive isn't fast enough to move the last plot before the next one finishes i don't recommend using this feature because you will eventually stall your drive.
+
+Once more, This feature is not meant for most drives.
 
 ### -repeat
 
