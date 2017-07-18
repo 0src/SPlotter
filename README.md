@@ -122,8 +122,6 @@ If you have Hyperthreading, You can almost double your thread count.
 
 ## General
 
-A nonce is 256kb.
-
 SPlotter will automatically make plots of the nonce size you specify until you run out of space on the drive.
 
 Running as admin/root will also increase your plotting speed.
@@ -131,6 +129,18 @@ Running as admin/root will also increase your plotting speed.
 SPlotter is fully compatible with XPlotter.
 
 Don't open issues for things you should already know or could ask google.
+
+## Nonces
+
+A nonce is 256kb.
+
+1GB is 4096 nonces.
+
+100GB is 409600 nonces.
+
+1TB is 4096000 nonces.
+
+If you have left-over when the plotter is done its because of how your HDD manufacturer determined 1GB, Its not an error.
 
 
 ![Imgur](http://i.imgur.com/SC3rW92.png)
