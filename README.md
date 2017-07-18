@@ -146,7 +146,7 @@ If you have left-over when the plotter is done its because of how your HDD manuf
 ![Imgur](http://i.imgur.com/SC3rW92.png)
 
 
-## XPlotter
+### Yuppers
 
-You might prefer the [original software](https://github.com/Blagodarenko/XPlotter) this is based on if you don't specifically need SPlotter for the repeating functionality which XPlotter doesn't have. Please be aware that XPlotter is only AVX1.
+![Yeap](http://i.imgur.com/lSSuWR1.png)
 
