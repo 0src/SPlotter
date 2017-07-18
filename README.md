@@ -64,9 +64,9 @@ SPlotter.exe_avx2 -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\pl
 
 This changes the default behavior of -move and makes it so it doesn't stop to move the last plot and starts working on the next plot immediately. This feature is not meant for most drives.
 
-If you are using a SSD or an Accelerated drive then you should add -RADW flag to your config.
+If you are using a SSD or an Accelerated drive then you should add -RADW 1 flag to your config.
 
-You can only see the progress of last plot that started moving because if your drive isn't fast enough to move the last plot before the next one finishes i don't recommend using this feature because you will eventually stall your drive.
+You can only see the progress of the last plot that started moving because if your drive isn't fast enough to move the last plot before the next one finishes i don't recommend using this feature because you will eventually stall your drive.
 
 Once more, This feature is not meant for most drives.
 
