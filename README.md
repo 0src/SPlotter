@@ -149,9 +149,3 @@ If you have left-over when the plotter is done its because of how your HDD manuf
 
 
 ![Imgur](http://i.imgur.com/SC3rW92.png)
-
-
-### Yuppers
-
-![Yeap](http://i.imgur.com/lSSuWR1.png)
-
