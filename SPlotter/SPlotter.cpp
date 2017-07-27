@@ -457,7 +457,7 @@ int main(int argc, char* argv[])
 			}
 
 			SetConsoleTextAttribute(hConsole, colour::GREEN);
-			printf("Multi-purpose BURST Plotter\nPlease consider donating: BURST-ZNEH-ZB8X-9T38-HSND9");
+			printf("Multi-purpose BURST Plotter\nPlease consider donating: BURST-ETVC-ETV3-QJ5A-2XZP9");
 
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			printf("\n\nChecking Directory Exists...\n");
