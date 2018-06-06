@@ -38,6 +38,7 @@ double Speed;
 unsigned long long RADWp = 0;
 unsigned long long mover_f = 0;
 time_t timeStartm;
+bool poc2 = false;
 
 void PrintError(const char * message, ...) {
 
@@ -191,6 +192,21 @@ void writer_i(const unsigned long long offset, const unsigned long long nonces_t
 	QueryPerformanceFrequency(&li);
 	PCFreq = double(li.QuadPart);
 
+	if (poc2) {
+		char *buffer = new char[32];
+
+
+		for (size_t scoop = 0; scoop < HASH_CAP / 2; scoop++) {
+			for (unsigned long t = 0; t < SCOOP_SIZE * nonces_to_write; t += 64) {
+				memcpy(buffer, &cache_write[scoop][t + 32], 32);
+				memcpy(&cache_write[scoop][t + 32], &cache_write[4095 - scoop][t + 32], 32);
+				memcpy(&cache_write[4095 - scoop][t + 32], buffer, 32);
+			}
+		}
+
+		delete[] buffer;
+	}
+
 	written_scoops = 0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&start_time);
 	for (size_t scoop = 0; scoop < HASH_CAP; scoop++)
@@ -317,6 +333,12 @@ void get_args_start()
 		{
 			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
+
+		if ((argsp[i] == "-poc2") )
+		{
+			poc2 = true;
+		}
+
 	}
 }
 
@@ -352,6 +374,12 @@ void get_args_next()
 		{
 			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
+
+		if ((argsp[i] == "-poc2"))
+		{
+			poc2 = true;
+		}
+
 	}
 }
 
@@ -422,7 +450,7 @@ int main(int argc, char* argv[])
 
 	std::vector<std::string> args(argv, &argv[argc]);
 	argsp = args;
-	std::string Cw = VersionString + " - Standard ";
+	std::string Cw = VersionString;
 	std::string CW = StringToUpper(Cw);
 	SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 	SetWindow(80, 22);
@@ -437,10 +465,10 @@ int main(int argc, char* argv[])
 
 		if (first_plot == true) {
 			get_args_start();
-
+			std::string poc = poc2 ? "POC2" : "POC1";
 			// Add Out Path to title
 			if (move_plots == 1) {
-				std::string Cw = VersionString + " - Standard Mover  | " + out_path + " | " + g_move_path;
+				std::string Cw = VersionString + " - Move  | " + out_path + " | " + g_move_path;
 				std::string CW = StringToUpper(Cw);
 				SetConsoleTitle(cAToLPCWSTR(CW.c_str()));
 			}
@@ -466,6 +494,9 @@ int main(int argc, char* argv[])
 
 			SetConsoleTextAttribute(hConsole, colour::GREEN);
 			printf("Multi-purpose BURST Plotter\nPlease consider donating: BURST-ETVC-ETV3-QJ5A-2XZP9");
+			SetConsoleTextAttribute(hConsole, colour::DARKGREEN);
+			printf("\nPoC2 version by ohager with support by JohnnyFFM");
+
 
 			SetConsoleTextAttribute(hConsole, colour::GRAY);
 			printf("\n\nChecking Directory Exists...\n");
@@ -485,6 +516,10 @@ int main(int argc, char* argv[])
 			if (lcounter >= 1) { printf(" |# of Plots  : %llu\n", lcounter); }
 			if (move_plots >= 1) { printf("[MOVE] \n"); printf(" |Move Plots  : Enabled\n"); }
 			if (RADWp >= 1) { printf(" |RADW Drive  : Enabled\n"); }
+
+			SetConsoleTextAttribute(hConsole, colour::GREEN);
+			if (poc2) { printf(" |POC2 Support  : Enabled\n"); }
+
 		}
 		// First Loop
 
@@ -499,7 +534,12 @@ int main(int argc, char* argv[])
 		}
 		if (nonces == 0) 	nonces = getFreeSpace(out_path.c_str()) / PLOT_SIZE;
 		nonces = (nonces / (bytesPerSector / SCOOP_SIZE)) * (bytesPerSector / SCOOP_SIZE);
+
 		std::string filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces) + "_" + std::to_string(nonces);
+		if (poc2) {
+			filename = std::to_string(addr) + "_" + std::to_string(startnonce) + "_" + std::to_string(nonces);
+		}
+		
 		mover_f = 0;
 		BOOL granted = SetPrivilege();
 		ofile_stream = CreateFileA((out_path + filename + ":stream").c_str(), GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);

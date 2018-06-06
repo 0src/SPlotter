@@ -2,8 +2,8 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-#define VERSION_MAJOR               1
-#define VERSION_MINOR               9
+#define VERSION_MAJOR               2
+#define VERSION_MINOR               0
 #define VERSION_REVISION            0
 #define VERSION_BUILD               0
 
@@ -13,11 +13,9 @@
                                     "." STRINGIZE(VERSION_MINOR)    \
                                     "." STRINGIZE(VERSION_REVISION) \
                                     "." STRINGIZE(VERSION_BUILD)    \
-									"-fork"
-                                   
 
 
-#define VER_PRODUCTNAME_STR         "c_version_binary"
+#define VER_PRODUCTNAME_STR         "SPlotter"
 #define VER_PRODUCT_VERSION         VER_FILE_VERSION
 #define VER_PRODUCT_VERSION_STR     VER_FILE_VERSION_STR
 #define VER_ORIGINAL_FILENAME_STR   VER_PRODUCTNAME_STR ".exe"
