@@ -1,6 +1,7 @@
 #include "Nonce.h"
 #include "shabal.h"
 #include "mshabal.h"
+#include <immintrin.h>
 
 namespace AVX1
 {

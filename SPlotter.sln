@@ -1,28 +1,43 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPlotter", "SPlotter\SPlotter.vcxproj", "{E4C9C8EA-306B-472D-AE40-395C607F80AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		AVX|x64 = AVX|x64
+		AVX|x86 = AVX|x86
+		AVX2|x64 = AVX2|x64
+		AVX2|x86 = AVX2|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		SSE|x64 = SSE|x64
+		SSE|x86 = SSE|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX|x64.ActiveCfg = AVX|x64
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX|x64.Build.0 = AVX|x64
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX|x86.ActiveCfg = AVX|Win32
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX|x86.Build.0 = AVX|Win32
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX2|x64.ActiveCfg = AVX2|x64
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX2|x64.Build.0 = AVX2|x64
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX2|x86.ActiveCfg = AVX2|Win32
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.AVX2|x86.Build.0 = AVX2|Win32
 		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Debug|x64.ActiveCfg = Debug|x64
 		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Debug|x64.Build.0 = Debug|x64
 		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Debug|x86.ActiveCfg = Debug|x64
 		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Debug|x86.Build.0 = Debug|x64
-		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Release|x64.ActiveCfg = Release|x64
-		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Release|x64.Build.0 = Release|x64
-		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Release|x86.ActiveCfg = Release|Win32
-		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.Release|x86.Build.0 = Release|Win32
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.SSE|x64.ActiveCfg = SSE|x64
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.SSE|x64.Build.0 = SSE|x64
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.SSE|x86.ActiveCfg = SSE|Win32
+		{E4C9C8EA-306B-472D-AE40-395C607F80AF}.SSE|x86.Build.0 = SSE|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {711CE272-DFB7-47D9-963B-2EE211242EDA}
 	EndGlobalSection
 EndGlobal
