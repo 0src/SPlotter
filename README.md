@@ -1,5 +1,7 @@
 # SPlotter
 
+> New: Default PoC2 support!!!
+
 Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 
 Donations welcomed: BURST-ETVC-ETV3-QJ5A-2XZP9
@@ -24,6 +26,7 @@ SPlotter.exe -id 17559140197979902351 -sn 0 -n 20000 -t 2 -path F:\burst\plots -
 
 ```
 -id: Your BURST address numeric ID.
+-poc1 Disables PoC2 support. (Fallback to PoC1)
 -sn: Nonce to Start at.
 -n: Number of Nonces to Plot.
 -t: Number of threads on your CPU you want to use.

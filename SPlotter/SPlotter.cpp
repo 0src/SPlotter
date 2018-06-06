@@ -38,7 +38,7 @@ double Speed;
 unsigned long long RADWp = 0;
 unsigned long long mover_f = 0;
 time_t timeStartm;
-bool poc2 = false;
+bool poc2 = true; // per default
 
 void PrintError(const char * message, ...) {
 
@@ -286,7 +286,7 @@ void get_args_start()
 	for (auto & it : argsp)
 		for (auto & c : it) c = tolower(c);
 
-	for (size_t i = 1; i < argsp.size() - 1; i++)
+	for (size_t i = 1; i < argsp.size(); i++)
 	{
 		if ((argsp[i] == "-id") && is_number(argsp[++i])) {
 			addr = strtoull(argsp[i].c_str(), 0, 10);
@@ -334,9 +334,9 @@ void get_args_start()
 			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
 
-		if ((argsp[i] == "-poc2") )
+		if ((argsp[i] == "-poc1") )
 		{
-			poc2 = true;
+			poc2 = false;
 		}
 
 	}
@@ -375,9 +375,9 @@ void get_args_next()
 			RADWp = strtoull(argsp[i].c_str(), 0, 10);
 		}
 
-		if ((argsp[i] == "-poc2"))
+		if ((argsp[i] == "-poc1"))
 		{
-			poc2 = true;
+			poc2 = false;
 		}
 
 	}
@@ -518,7 +518,7 @@ int main(int argc, char* argv[])
 			if (RADWp >= 1) { printf(" |RADW Drive  : Enabled\n"); }
 
 			SetConsoleTextAttribute(hConsole, colour::GREEN);
-			if (poc2) { printf(" |POC2 Support  : Enabled\n"); }
+			printf(" |POC Version  : %s\n", poc2 ? "POC2" : "POC1");
 
 		}
 		// First Loop
