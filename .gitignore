@@ -1,7 +1,10 @@
 /.vs
+/.idea
 /x64
 /SPlotter/x64
 
 *.user
 *.sdf
 *.suo
+*.zip
+
