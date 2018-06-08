@@ -29,6 +29,9 @@
     <ClInclude Include="mshabal256.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
