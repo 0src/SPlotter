@@ -1,17 +1,13 @@
 # SPlotter
 
-> New: Default PoC2 support!!!
+> New: PoC2 support (per default) and 10-15% performance enhancements (thnx to Blago)
 
-Windows 64-Bit Download: [HERE](https://github.com/SamuelNZ/SPlotter/releases/)
 
-Donations welcomed: BURST-ETVC-ETV3-QJ5A-2XZP9
-
-SPlotter is a light-weight BURST Plotter that creates optimized plots of a given size until the drive is full or it makes the number of plots you specify with the ability to auto-move the last plot to a destination drive.
+SPlotter is a light-weight BURST Plotter (based on (XPlotter)[https://github.com/Blagodarenko/XPlotter] ) that creates optimized plots of a given size until the drive is full or it makes the number of plots you specify with the ability to auto-move the last plot to a destination drive.
 
 This is particularly useful for creating plots for SMR/Seagate/External drives or creating plots on an NVMe or SSD and moving them automatically.
 
 You can run more than one instance of SPlotter at a time without cannabilizing your CPU, This means if you have more than one drive to plot too that you can reduce the amount of CPU time you waste during write times. Read more below.
-
 
 
 # Usage
