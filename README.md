@@ -3,7 +3,7 @@
 > New: PoC2 support (per default) and 10-15% performance enhancements (thnx to Blago)
 
 
-SPlotter is a light-weight BURST Plotter (based on (XPlotter)[https://github.com/Blagodarenko/XPlotter] ) that creates optimized plots of a given size until the drive is full or it makes the number of plots you specify with the ability to auto-move the last plot to a destination drive.
+SPlotter is a light-weight BURST Plotter (based on [XPlotter](https://github.com/Blagodarenko/XPlotter) ) that creates optimized plots of a given size until the drive is full or it makes the number of plots you specify with the ability to auto-move the last plot to a destination drive.
 
 This is particularly useful for creating plots for SMR/Seagate/External drives or creating plots on an NVMe or SSD and moving them automatically.
 
