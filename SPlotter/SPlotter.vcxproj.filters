@@ -12,6 +12,9 @@
     <ClCompile Include="mshabal_sse4.c">
       <Filter>ShabalImps</Filter>
     </ClCompile>
+    <ClCompile Include="mshabal256_avx2.c">
+      <Filter>ShabalImps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mshabal.h">
@@ -21,6 +24,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="shabal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mshabal256.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

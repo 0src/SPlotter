@@ -391,6 +391,7 @@
       <CompileAs>Default</CompileAs>
       <SDLCheck>true</SDLCheck>
       <StructMemberAlignment>Default</StructMemberAlignment>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -422,10 +423,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="mshabal.h" />
+    <ClInclude Include="mshabal256.h" />
     <ClInclude Include="Nonce.h" />
     <ClInclude Include="shabal.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mshabal256_avx2.c" />
     <ClCompile Include="mshabal_avx1.c" />
     <ClCompile Include="mshabal_avx2.c" />
     <ClCompile Include="mshabal_sse4.c" />
